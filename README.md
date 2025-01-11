@@ -217,9 +217,6 @@ SONAR_BEAM_NUM = 256;   % 波束数量
 ## 联系方式
 
 - 作者：[Chihong（游子昂）](https://github.com/Chi-hong22)
-- 邮箱：[you.ziang@hrbeu.edu.cn]
-- 项目地址：[GitHub-Repository-URL]
+- 邮箱：`you.ziang@hrbeu.edu.cn`
+- 项目地址：[MB-TerrainSim](https://github.com/Chi-hong22/MB-TerrainSim)
 
-## 许可证
-
-本项目基于 MIT 许可证开源。
