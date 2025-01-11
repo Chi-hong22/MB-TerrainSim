@@ -1,12 +1,57 @@
-%% 项目简介
-% 日期：241230
-% 作者：Chihong（游子昂）
-% 版本：v1.0
-% 本脚本用于处理AUV路径数据并生成仿真惯导误差。主要功能包括：
-% 1. NESP路径数据预处理：降采样、坐标变换等
-% 2. 惯导误差模拟：基于真实实验数据提取的误差模式
-% 3. 生成带误差的仿真惯导路径
-% 最终目标是为多波束模拟采集提供真实的AUV运动数据。
+%% dataPreproccess - AUV路径数据预处理与惯导误差仿真工具
+%
+% 功能描述：
+%   处理AUV路径数据并生成仿真惯导误差，包括数据降采样、坐标变换、
+%   惯导误差模拟等功能
+%
+% 作者信息：
+%   作者：Chihong（游子昂）
+%   邮箱：you.ziang@hrbeu.edu.cn
+%   单位：哈尔滨工程大学
+%
+% 版本信息：
+%   当前版本：v1.1
+%   创建日期：241230
+%   最后修改：250104
+%
+% 版本历史：
+%   v1.1 (250104) - 更新
+%       + 优化惯导误差生成算法
+%       + 添加详细误差分析功能
+%       + 改进数据可视化效果
+%   v1.0 (241230) - 首次发布
+%       + 实现基础数据预处理功能
+%       + 支持路径降采样
+%       + 添加基本误差模拟
+%
+% 输入文件：
+%   - *_PathFollowing_*.mat     - 原始路径数据
+%   - *_Processed_path_data.mat - GPS参考路径数据（可选）
+%
+% 输出文件：
+%   - *_Processed_path_data.mat     - 处理后的路径数据
+%   - *_Ins_path_simulated_data.mat - 带误差的仿真惯导路径
+%
+% 主要参数：
+%   line_error_std_*     - [double] 直线段误差标准差
+%   turn_error_std_*     - [double] 转弯段误差标准差
+%   cumulative_error_factor_* - [double] 累积误差因子
+%   no_error_fraction    - [double] 无误差路径比例
+%
+% 注意事项：
+%   1. 路径数据需包含位置和艏向信息
+%   2. 误差参数需根据实际情况调整
+%   3. 建议对生成的误差进行验证
+%
+% 调用示例：
+%   % 直接运行脚本即可
+%   dataPreproccess
+%
+% 依赖工具箱：
+%   - Statistics and Machine Learning Toolbox
+%
+% 参见函数：
+%   generateSimulatedInsPath, downsample
 
 %% 对通过动力学模型跑出来的AUV路径进行前处理
 

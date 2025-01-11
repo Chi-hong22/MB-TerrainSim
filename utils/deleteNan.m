@@ -1,12 +1,43 @@
-% deleteNan - 清理PCD文件中的无效数据
-% 功能：
-%   1. 读取PCD格式文件
-%   2. 删除包含NaN值的点
-%   3. 更新点云文件的头部信息
-%   4. 保存清理后的PCD文件
-% 参数：
-%   input_folder - 输入文件夹路径
-%   output_folder - 输出文件夹路径
+%% deleteNan - PCD点云数据无效值清理工具
+%
+% 功能描述：
+%   处理PCD格式点云文件，移除包含NaN值的点，并更新文件头部信息
+%
+% 作者信息：
+%   作者：Chihong（游子昂）,李琦
+%   邮箱：you.ziang@hrbeu.edu.cn
+%   单位：哈尔滨工程大学
+%
+% 版本信息：
+%   当前版本：v1.0
+%   创建日期：240409
+%   最后修改：240409
+%
+% 版本历史：
+%   v1.0 (240409) - 首次发布
+%       + 实现基础的NaN值清理功能
+%       + 支持批量处理PCD文件
+%       + 自动更新文件头部信息
+%
+% 输入参数：
+%   input_folder  - [string] 输入文件夹路径
+%                   包含待处理的PCD文件
+%   output_folder - [string] 输出文件夹路径
+%                   用于保存处理后的文件
+%
+% 输出参数：
+%   无直接返回值，处理结果保存到output_folder
+%
+% 注意事项：
+%   1. 输入文件必须是ASCII格式的PCD文件
+%   2. 文件命名格式必须为"submap_X_frame.pdc"
+%   3. 确保输出文件夹具有写入权限
+%
+% 调用示例：
+%   deleteNan('input_pcd', 'output_pcd');
+%
+% 依赖工具箱：
+%   无特殊依赖
 
 function deleteNan(input_folder, output_folder)
     % 列出输入文件夹中所有的 .pdc 文件

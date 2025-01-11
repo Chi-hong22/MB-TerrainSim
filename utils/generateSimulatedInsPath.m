@@ -1,31 +1,98 @@
+%% generateSimulatedInsPath - 惯导轨迹仿真生成工具
+%
+% 功能描述：
+%   基于输入的GPS轨迹数据，模拟惯性导航系统的路径生成。通过添加随机误差、
+%   累积误差和转弯误差，实现对实际惯导系统特性的仿真。
+%
+% 作者信息：
+%   作者：Chihong（游子昂）
+%   邮箱：you.ziang@hrbeu.edu.cn
+%   单位：哈尔滨工程大学
+%
+% 版本信息：
+%   当前版本：v1.5
+%   创建日期：240409
+%   最后修改：240410
+%
+% 版本历史：
+%   v1.0 (240409) - 首次发布
+%       + 实现基础的惯导误差模拟
+%       + 支持直线段和转弯段误差区分
+%   v1.5 (240410) - 功能增强
+%       + 添加累积误差随直线段长度的动态调整
+%       + 优化转弯段误差生成算法
+%       + 增加无误差起始段设置
+%       + 完善艏向角更新逻辑
+%
+% 输入参数：
+%   gps_path                - [Nx3 double] GPS路径矩阵 [x, y, heading]
+%                            必选参数，heading单位为度
+%   line_error_std_x        - [double] 直线段X方向随机误差标准差
+%                            必选参数，建议范围0.02-0.05
+%   line_error_std_y        - [double] 直线段Y方向随机误差标准差
+%                            必选参数，建议范围0.03-0.08
+%   turn_error_std_x        - [double] 转弯段X方向随机误差标准差
+%                            必选参数，建议范围0.0003-0.001
+%   turn_error_std_y        - [double] 转弯段Y方向随机误差标准差
+%                            必选参数，建议范围0.01-0.03
+%   cumulative_error_factor_x - [double] X方向累积误差因子
+%                              必选参数，建议范围0.015-0.025
+%   cumulative_error_factor_y - [double] Y方向累积误差因子
+%                              必选参数，建议范围0.002-0.005
+%   turn_error_factor_x     - [double] 转弯段X方向误差系数
+%                            必选参数，建议范围0.005-0.02
+%   turn_error_factor_y     - [double] 转弯段Y方向误差系数
+%                            必选参数，建议范围0.005-0.02
+%   no_error_fraction       - [double] 起始无误差段比例
+%                            必选参数，建议范围0.02-0.05
+%   window_size            - [int] 艏向角平滑窗口大小
+%                           必选参数，建议范围30-50
+%
+% 输出参数：
+%   simulated_path         - [Nx3 double] 仿真后的惯导路径 [x', y', heading']
+%   simulated_error        - [Nx3 double] 仿真产生的误差 [err_x, err_y, err_heading]
+%
+% 注意事项：
+%   1. GPS路径需预先平滑处理以获得更好的仿真效果
+%   2. 参数设置会显著影响仿真结果的真实性
+%   3. 建议根据实际惯导系统特性调整参数
+%   4. 转弯检测阈值(1.2度)可根据需要调整
+%
+% 调用示例：
+%   % 示例1：典型水下航行场景
+%   params.error.line_std = [0.03, 0.05];          % 直线段误差标准差
+%   params.error.turn_std = [0.0005, 0.02];        % 转弯段误差标准差
+%   params.error.cumulative = [0.019, 0.0025];     % 累积误差因子
+%   params.error.turn_factor = [0.01, 0.01];       % 转弯误差系数
+%   params.error.no_error_fraction = 0.03;         % 无误差路径比例
+%   params.error.window_size = 40;                 % 滑动窗口大小
+%   
+%   [ins_path, ins_error] = generateSimulatedInsPath(gps_path, ...
+%       params.error.line_std(1), params.error.line_std(2), ...
+%       params.error.turn_std(1), params.error.turn_std(2), ...
+%       params.error.cumulative(1), params.error.cumulative(2), ...
+%       params.error.turn_factor(1), params.error.turn_factor(2), ...
+%       params.error.no_error_fraction, ...
+%       params.error.window_size);
+%
+%   % 示例2：高精度惯导场景（误差较小）
+%   [ins_path, ins_error] = generateSimulatedInsPath(gps_path, ...
+%       0.01, 0.01, 0.0001, 0.005, ...
+%       0.005, 0.001, 0.005, 0.005, ...
+%       0.05, 30);
+%
+% 依赖工具箱：
+%   - Statistics and Machine Learning Toolbox (normrnd函数)
+%
+% 参见函数：
+%   normrnd, diff, atan2, rad2deg
+
 function [simulated_path, simulated_error] = generateSimulatedInsPath(gps_path, ...
                                                                       line_error_std_x, line_error_std_y, ...
                                                                       turn_error_std_x, turn_error_std_y, ...
                                                                       cumulative_error_factor_x, cumulative_error_factor_y, ...
                                                                       turn_error_factor_x, turn_error_factor_y, ...
                                                                       no_error_fraction, window_size)
-    % 函数说明：
-    % generateSimulatedInsPath 模拟惯性导航系统（INS）的路径，基于输入的GPS路径数据添加位置误差并生成仿真的INS路径。
-    % 日期：241226
-    % 作者：Chihong（游子昂）
-    % 版本：1.5
-    %
-    % 输入参数：
-    % gps_path                - GPS路径，Nx3矩阵，每行包含 [x, y, heading]
-    % line_error_std_x        - 直线段 X 方向误差的标准差
-    % line_error_std_y        - 直线段 Y 方向误差的标准差
-    % turn_error_std_x        - 转弯段 X 方向误差的标准差
-    % turn_error_std_y        - 转弯段 Y 方向误差的标准差
-    % cumulative_error_factor_x - 累积误差的 X 方向因子
-    % cumulative_error_factor_y - 累积误差的 Y 方向因子
-    % turn_error_factor_x     - 转弯段 X 方向误差的系数
-    % turn_error_factor_y     - 转弯段 Y 方向误差的系数
-    % no_error_fraction       - 前百分之几的路径不产生误差 (范围 0-1)
-    % window_size             - 滑动窗口大小，用于计算路径的平滑艏向角变化
-    %
-    % 输出参数：
-    % simulated_path          - 仿真后的INS路径，Nx3矩阵，每行包含 [x', y', heading']
-    % simulated_error         - 仿真路径中的误差，Nx3矩阵，每行包含 [误差_x, 误差_y, 误差_heading]，单位为角度制
 
     % 提取路径信息
     heading = gps_path(:, 3); % 提取艏向角

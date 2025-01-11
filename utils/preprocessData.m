@@ -1,28 +1,67 @@
-% preprocessData - 多波束数据预处理函数
-% 日期：250104
-% 作者：Chihong（游子昂）
-% 版本：v1.3 新增INS误差模拟功能
-% 历史版本：
-%   v1.2 优化降采样算法
-%   v1.1 实现基础数据预处理功能
+%% preprocessData - AUV数据预处理与INS误差模拟工具
 %
-% 输入参数:
-%   pathData - 原始AUV路径数据
-%   params - 参数结构体
-%       .target_points - 降采样目标点数
-%       .scale_factor - 坐标缩放系数
-%       .error - INS误差参数
-%           .line_std - 直线段误差标准差 [x, y]
-%           .turn_std - 转弯段误差标准差 [x, y]
-%           .cumulative - 累积误差因子 [x, y]
-%           .turn_factor - 转弯误差系数 [x, y]
-%           .no_error_fraction - 无误差路径比例
-%           .window_size - 滑动窗口大小
+% 功能描述：
+%   对AUV原始路径数据进行预处理，包括降采样、坐标变换，并模拟INS误差
 %
-% 输出参数:
-%   processedPath - 处理后的理想AUV路径
-%   insPath - 添加INS误差后的AUV路径
-%   insError - INS误差数据
+% 作者信息：
+%   作者：Chihong（游子昂）
+%   邮箱：you.ziang@hrbeu.edu.cn
+%   单位：哈尔滨工程大学
+%
+% 版本信息：
+%   当前版本：v1.3
+%   创建日期：250104
+%   最后修改：250104
+%
+% 版本历史：
+%   v1.3 (250104) - 新增INS误差模拟功能
+%       + 添加INS误差生成模块
+%       + 优化路径可视化
+%   v1.2 (250103) - 优化降采样算法
+%       + 改进数据降采样方法
+%       + 添加数据验证功能
+%   v1.1 (250102) - 实现基础数据预处理
+%       + 实现基本数据处理功能
+%       + 添加数据导出功能
+%
+% 输入参数：
+%   pathData - [NxM] 原始AUV路径数据矩阵
+%   params   - 参数结构体
+%     .target_points      - [int] 降采样目标点数
+%     .scale_factor      - [double] 坐标缩放系数
+%     .error            - INS误差参数结构体
+%       .line_std       - [1x2] 直线段误差标准差 [x,y]
+%       .turn_std       - [1x2] 转弯段误差标准差 [x,y]
+%       .cumulative     - [1x2] 累积误差因子 [x,y]
+%       .turn_factor    - [1x2] 转弯误差系数 [x,y]
+%       .no_error_fraction - [double] 无误差路径比例 (0-1)
+%       .window_size    - [int] 滑动窗口大小
+%
+% 输出参数：
+%   processedPath - [Nx3] 处理后的理想AUV路径 [x,y,heading]
+%   insPath      - [Nx3] 添加INS误差后的路径 [x,y,heading]
+%   insError     - [Nx3] INS误差数据 [dx,dy,dheading]
+%
+% 注意事项：
+%   1. 数据格式：确保输入数据格式正确
+%   2. 内存要求：大数据集可能需要较大内存
+%   3. 处理时间：与数据量成正比
+%
+% 调用示例：
+%   % 定义参数结构体
+%   params.target_points = 1000;
+%   params.scale_factor = 10;
+%   params.error = struct('line_std',[0.1,0.1],...);
+%   
+%   % 处理数据
+%   [path, ins, err] = preprocessData(raw_data, params);
+%
+% 依赖工具箱：
+%   - Statistics and Machine Learning Toolbox
+%   - Signal Processing Toolbox
+%
+% 参见函数：
+%   generateSimulatedInsPath, downsample, plot
 
 function [processedPath, insPath, insError] = preprocessData(pathData, params)    
     original_following = pathData;
@@ -42,6 +81,9 @@ function [processedPath, insPath, insError] = preprocessData(pathData, params)
     
     % 删除多余数据
     following_downsampled = following_downsampled(501:end, :);      % 删除前 500 行
+
+    % % shortTest
+    % following_downsampled = following_downsampled(501:7000, :);      % shortTest,只用501:7000行
     
     %% 计算艏向角 - 并行优化版本
     % n_points = size(following_downsampled, 1);

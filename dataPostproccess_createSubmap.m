@@ -1,17 +1,59 @@
-%% 项目简介
-% 日期：241219
-% 作者：Chihong（游子昂）
-% 版本：v1.0
-% 本脚本旨在对接牛师兄多波束模拟脚本 `main_multibeamSimulink.m` 的输出数据 `recoder`，
-% 实现子地图生成和处理。具体步骤包括加载数据、添加噪声、创建子地图、坐标转换、以及生成 PCD 文件。
-% 最终目标是为 bathymetric_slam 提供格式化的子地图数据。
-% 
-% createSubmap
-% 从地形数据采集处得到recoder，运行程序后得到sub_maps,一个元胞数组，每个元素代表一个子地图，直接由recoder按行切割而来。每80m或者Y变化过大划为一个子地图，当前子地图过小时划入上一个子地图。
-% coordinateTransform
-% 读取sub_maps，得到子地图数量的sub_map_i.txt文件，其中第一行为关键帧索引，第二行为关键帧位置，第三行为关键帧速度方向。此后的行为转换到关键帧坐标系下的测深点数据。此外KEY_FRAME存关键帧的索引以及关键帧位置以及速度方向。
-% submap2PCD
-% 读取指定目录下的所有sub_map_i.txt，将他们转化为bathymetric_slam需要的数据格式。其中速度方向转化为了四元数的形式。存为submap_i_frame.pdc
+%% dataPostproccess_createSubmap - 多波束数据后处理与子地图生成工具
+%
+% 功能描述：
+%   对多波束采集数据进行后处理，生成子地图，并转换为SLAM所需格式。
+%   包括数据加载、误差添加、子地图划分、坐标转换等功能
+%
+% 作者信息：
+%   作者：Chihong（游子昂）
+%   邮箱：you.ziang@hrbeu.edu.cn
+%   单位：哈尔滨工程大学
+%
+% 版本信息：
+%   当前版本：v1.1
+%   创建日期：241219
+%   最后修改：250104
+%
+% 版本历史：
+%   v1.1 (250104) - 更新
+%       + 集成惯导误差数据处理
+%       + 优化子地图生成算法
+%       + 改进文件组织结构
+%   v1.0 (241219) - 首次发布
+%       + 实现基础子地图生成
+%       + 支持PCD格式转换
+%       + 添加坐标系转换
+%
+% 输入文件：
+%   - *_recoder.mat                  - 多波束记录数据
+%   - *_Ins_path_simulated_data.mat  - 惯导轨迹数据
+%
+% 输出文件：
+%   - *_sub_maps_data.mat           - 子地图数据
+%   - /TXT_sub_maps/sub_map_*.txt   - TXT格式子地图
+%   - /PCD_sub_maps/submap_*_frame.pcd - PCD格式子地图
+%
+% 主要功能：
+%   1. 加载与预处理多波束数据
+%   2. 添加仿真惯导误差
+%   3. 生成规则子地图
+%   4. 坐标系转换
+%   5. 格式转换输出
+%
+% 注意事项：
+%   1. 确保输入数据完整性
+%   2. 子地图划分参数需按实际需求调整
+%   3. 注意磁盘空间要求
+%
+% 调用示例：
+%   % 直接运行脚本即可
+%   dataPostproccess_createSubmap
+%
+% 依赖工具箱：
+%   - Point Cloud Library
+%
+% 参见函数：
+%   createSubmap, coordinateTransform, submap2PCD
 
 %% 初始化
 clc;
@@ -55,7 +97,7 @@ submap_root_dir = fullfile(current_path, 'Data', save_date_str);
 submap_txt_dir = fullfile(submap_root_dir, 'TXT_sub_maps');
 submap_pcd_dir = fullfile(submap_root_dir, 'PCD_sub_maps');
 % 创建目录
-if ~exist(submap_txt_dir, 'dir') || ~exist(submap_pcd_dir, 'dir')
+if !exist(submap_txt_dir, 'dir') || !exist(submap_pcd_dir, 'dir')
    try
        mkdir(fullfile(current_path, 'Data'));
        mkdir(submap_root_dir);

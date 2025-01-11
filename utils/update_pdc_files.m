@@ -1,21 +1,51 @@
-%% PDC文件更新函数
-% 该函数用于批量更新PDC点云文件中的视点信息
-% 作者: 李琦，Chihong(游子昂)
-% 日期: 241225
-% 版本: v1.0
+%% update_pdc_files - PDC点云文件视点信息更新工具
+%
+% 功能描述：
+%   批量更新PDC点云文件中的视点信息，用于多波束数据后处理
+%
+% 作者信息：
+%   作者：李琦，Chihong（游子昂）
+%   邮箱：you.ziang@hrbeu.edu.cn
+%   单位：哈尔滨工程大学
+%
+% 版本信息：
+%   当前版本：v1.0
+%   创建日期：241225
+%   最后修改：241225
+%
+% 版本历史：
+%   v1.0 (241225) - 首次发布
+%       + 实现PDC文件批量更新功能
+%       + 添加文件排序处理
+%       + 支持视点参数自动更新
+%
 % 输入参数：
-%   input_folder: 输入文件夹路径，包含原始PDC文件
-%   output_folder: 输出文件夹路径，用于保存更新后的PDC文件
-%   KEY_FRAME: 关键帧索引数组
-%   path_ins: 包含位置和方向信息的路径数据
-% 功能说明：
-%   1. 读取输入文件夹中的所有PDC文件
-%   2. 根据关键帧信息更新每个PDC文件的视点参数
-%   3. 将更新后的文件保存到输出文件夹中
+%   input_folder  - [string] 输入文件夹路径
+%                   包含原始PDC文件
+%   output_folder - [string] 输出文件夹路径
+%                   用于保存更新后的PDC文件
+%   KEY_FRAME     - [Nx5] 关键帧信息矩阵
+%                   [索引,x,y,z,方向角]
+%   path_ins      - [Nx4] 位置和方向信息矩阵
+%                   [x,y,z,phi], phi为弧度制
+%
+% 输出参数：
+%   无直接返回值，更新后的文件保存到output_folder
+%
 % 注意事项：
-%   - PDC文件名格式必须为'submap_X_frame.pdc'
-%   - path_ins数据格式为[x,y,z,phi]
-%   - 需要确保输入参数的维度匹配
+%   1. 文件命名：PDC文件必须遵循'submap_X_frame.pdc'格式
+%   2. 数据格式：path_ins数据需包含完整的位姿信息
+%   3. 权限要求：确保对输出文件夹有写入权限
+%
+% 调用示例：
+%   % 基础调用方式
+%   update_pdc_files('./input/', './output/', key_frames, path_data);
+%
+% 依赖工具箱：
+%   - 无特殊依赖
+%
+% 参见函数：
+%   Phi2Quaternion, fileread, fopen
 
 function update_pdc_files(input_folder, output_folder, KEY_FRAME, path_ins)
     % 列出输入文件夹中所有的 .pdc 文件

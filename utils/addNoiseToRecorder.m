@@ -1,30 +1,57 @@
-function recoder_INS = addNoiseToRecorder(recoder, ins_path_simulated, ins_simulated_error)
-    %ADDNOISETORECORDER 为AUV位姿及点云数据添加噪声
-    % 该函数用于处理AUV多波束数据，给位姿和点云添加模拟噪声
-    % 作者: Chihong(游子昂)
-    % 日期: 241228
-    % 版本: v1.0
-    %
-    % 输入参数:
-    %   recoder - 原始数据记录，格式:
-    %             第1列: 帧数
-    %             第2-3列: AUV的xy坐标
-    %             第4列: 艏向角(角度制)
-    %             第5列: 标识符
-    %             第6列及之后: 点云坐标(256个点的xyz)
-    %   ins_path_simulated - 添加噪声后的AUV位姿，Nx3矩阵 [x,y,heading]
-    %   ins_simulated_error - AUV位姿噪声，Nx3矩阵 [误差_x,误差_y,误差_heading]
-    %
-    % 输出参数:
-    %   recoder_INS - 添加噪声后的数据记录
-    %
-    % 注意事项:
-    %   1. 调用示例：
-    %      recoder_INS = addNoiseToRecorder(recoder, ins_path_simulated, ins_simulated_error);
-    %   2. 输入数据需保持帧数一致
-    %
+%% addNoiseToRecorder - AUV数据噪声添加工具
+%
+% 功能描述：
+%   为AUV位姿及点云数据添加模拟噪声，用于仿真测试
+%
+% 作者信息：
+%   作者：Chihong（游子昂）
+%   邮箱：you.ziang@hrbeu.edu.cn
+%   单位：哈尔滨工程大学
+%
+% 版本信息：
+%   当前版本：v1.0
+%   创建日期：241228
+%   最后修改：241228
+%
+% 版本历史：
+%   v1.0 (241228) - 首次发布
+%       + 实现基础噪声添加功能
+%       + 支持位置和姿态噪声
+%       + 添加点云坐标变换
+%
+% 输入参数：
+%   recoder             - 原始数据记录 [NxM]
+%                        第1列：帧数
+%                        第2-3列：AUV的xy坐标 [m]
+%                        第4列：艏向角 [deg]
+%                        第5列：标识符
+%                        第6列及之后：点云坐标(256点xyz) [m]
+%   ins_path_simulated  - 添加噪声后的AUV位姿 [Nx3]
+%                        [x,y,heading]
+%   ins_simulated_error - AUV位姿噪声 [Nx3]
+%                        [误差_x,误差_y,误差_heading]
+%
+% 输出参数：
+%   recoder_INS        - 添加噪声后的数据记录
+%                       格式与输入recoder相同
+%
+% 注意事项：
+%   1. 数据维度：确保输入矩阵维度匹配
+%   2. 角度单位：采用角度制
+%   3. 坐标系：采用右手坐标系
+%
+% 调用示例：
+%   % 添加模拟噪声
+%   recoder_INS = addNoiseToRecorder(recoder, ins_path, ins_error);
+%
+% 依赖工具箱：
+%   - 无特殊依赖
+%
+% 参见函数：
+%   reshape, cosd, sind
 
-    
+function recoder_INS = addNoiseToRecorder(recoder, ins_path_simulated, ins_simulated_error)
+
     % 预分配输出矩阵空间
     recoder_INS = recoder;
     
