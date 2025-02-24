@@ -57,8 +57,32 @@ run('dataPostproccess_createSubmap.m')
 
 ## 输入数据要求
 
-- 地形数据：`MapPoint_900_900.mat`（包含X、Y、Z三个矩阵）
-- 路径数据：`PathFollowing_1.mat`（包含AUV轨迹点）
+### 地形数据：`MapPoint_900_900.mat`
+
+包含三个 double 矩阵变量：X、Y、Z
+- 实际尺寸：900×900
+- 扩展尺寸：1100×1100 double（边缘缓冲区）
+- 数据说明：
+  - X、Y：采样点平面坐标
+  - Z：对应点的地形高程值
+- 注意：边缘各扩展100个采样点作为缓冲区，用于确保多波束模拟过程中的边界安全
+
+### 路径数据：`PathFollowing_1.mat`
+
+包含变量：PathFollowing
+- 数据结构：n×3 double矩阵
+- 列说明：[x, y, theta]
+  - x：AUV在X轴位置
+  - y：AUV在Y轴位置
+  - theta：AUV艏向角（角度制）
+- n为路径采样点数量
+
+### 数据格式要求
+
+1. 所有数据必须采用MATLAB .mat格式保存
+2. 变量名必须与上述说明保持一致
+3. 坐标系统应统一为右手系
+4. 角度使用角度制（0-360度）
 
 ## 输出说明
 

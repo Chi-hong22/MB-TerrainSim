@@ -84,7 +84,7 @@ fprintf('Step 3.1 - 子地图划分完成\n');
 % 保存子地图数据
 save_date_time = datetime('now');
 submap_filename = sprintf('%02d%02d%02d_sub_maps_data.mat', ...
-   mod(year(save_date_time),100), month(save_date_time), day(save_date_time));
+                        mod(year(save_date_time),100), month(save_date_time), day(save_date_time));
 data_save_path = fullfile(current_path, 'Data');
 save(fullfile(data_save_path, submap_filename), 'submap_data');
 fprintf('Step 3.2 - 子地图数据保存完成: %s\n', submap_filename);
@@ -97,15 +97,15 @@ submap_root_dir = fullfile(current_path, 'Data', save_date_str);
 submap_txt_dir = fullfile(submap_root_dir, 'TXT_sub_maps');
 submap_pcd_dir = fullfile(submap_root_dir, 'PCD_sub_maps');
 % 创建目录
-if !exist(submap_txt_dir, 'dir') || !exist(submap_pcd_dir, 'dir')
-   try
-       mkdir(fullfile(current_path, 'Data'));
-       mkdir(submap_root_dir);
-       mkdir(submap_txt_dir);
-       mkdir(submap_pcd_dir);
-   catch err
-       error('目录创建失败：%s', err.message);
-   end
+if ~exist(submap_txt_dir, 'dir') || ~exist(submap_pcd_dir, 'dir')
+    try
+        mkdir(fullfile(current_path, 'Data'));
+        mkdir(submap_root_dir);
+        mkdir(submap_txt_dir);
+        mkdir(submap_pcd_dir);
+    catch err
+        error('目录创建失败：%s', err.message);
+    end
 end
 
 % 坐标转换：全局坐标系转关键帧载体坐标系
