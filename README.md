@@ -66,6 +66,7 @@ run('dataPostproccess_createSubmap.m')
   - X、Y：采样点平面坐标
   - Z：对应点的地形高程值
 - 注意：边缘各扩展100个采样点作为缓冲区，用于确保多波束模拟过程中的边界安全
+- 可使用[MB-SeabedSim](https://github.com/Chi-hong22/MB-SeabedSim)仓库代码生成符合要求的地形数据
 
 ### 路径数据：`PathFollowing_1.mat`
 
