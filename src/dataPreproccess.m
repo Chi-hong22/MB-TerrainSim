@@ -12,7 +12,7 @@
 % 版本信息：
 %   当前版本：v1.1
 %   创建日期：241230
-%   最后修改：250104
+%   最后修改：250429
 %
 % 版本历史：
 %   v1.1 (250104) - 更新
@@ -108,9 +108,16 @@ following_downsampled_temp(:, 3) = deg2rad(following_downsampled(:,3));% 添加�
 following_downsampled_temp(:, 3) = following_downsampled(:,3);
 processed_path = following_downsampled_temp;
 
-% 获取当前路径
-currentPath = pwd;
-dataPath = fullfile(currentPath,'Data');
+% 获取当前脚本所在路径
+current_script_path = fileparts(mfilename('fullpath'));
+% 设置存储路径为当前脚本路径的上一级文件夹下的Data文件夹
+data_path = fullfile(current_script_path, '..', 'Data');
+
+% 如果目录不存在，则创建它
+if ~exist(data_path, 'dir')
+    mkdir(data_path);
+end
+
 % 生成带时间戳的文件名 (使用datetime直接格式化)
 current_date = datetime('now');
 filename = sprintf('%02d%02d%02d_Processed_path_data.mat', ...
@@ -118,7 +125,7 @@ filename = sprintf('%02d%02d%02d_Processed_path_data.mat', ...
     month(current_date), ...
     day(current_date));
 % 保存处理后的数据
-save(fullfile(dataPath,filename), 'processed_path');
+save(fullfile(data_path, filename), 'processed_path');
 fprintf('Step 4 - 数据保存完成: %s\n', filename);
 
 %% 绘制路径图进行验证
@@ -226,8 +233,16 @@ grid on;
 
 %% 保存对应噪声INS路径
 % 获取当前路径
-currentPath = pwd;
-dataPath = fullfile(currentPath,'Data');
+% 获取当前脚本所在路径
+current_script_path = fileparts(mfilename('fullpath'));
+% 设置存储路径为当前脚本路径的上一级文件夹下的Data文件夹
+data_path = fullfile(current_script_path, '..', 'Data');
+
+% 如果目录不存在，则创建它
+if ~exist(data_path, 'dir')
+    mkdir(data_path);
+end
+
 % 生成带时间戳的文件名 (使用datetime直接格式化)
 current_date = datetime('now');
 filename = sprintf('%02d%02d%02d_Ins_path_simulated_data.mat', ...
@@ -235,4 +250,4 @@ filename = sprintf('%02d%02d%02d_Ins_path_simulated_data.mat', ...
     month(current_date), ...
     day(current_date));
 % 保存处理后的数据
-save(fullfile(dataPath,filename), 'ins_path_simulated','ins_simulated_error');
+save(fullfile(data_path,filename), 'ins_path_simulated','ins_simulated_error');

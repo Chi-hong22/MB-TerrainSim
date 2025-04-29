@@ -12,7 +12,7 @@
 % 版本信息：
 %   当前版本：v1.1
 %   创建日期：250104
-%   最后修改：250104
+%   最后修改：250429
 %
 % 版本历史：
 %   v1.0 (250103) - 初始版本
@@ -81,10 +81,23 @@
 function main()
     % 清理工作环境
     clc; close all;
-    
+
     % 获取当前工作目录
     currentPath = pwd;
     addpath(genpath(currentPath));
+
+    % 获取当前脚本所在路径
+    current_script_path = fileparts(mfilename('fullpath'));
+    % 设置数据路径为当前脚本路径的上一级文件夹下的Data文件夹
+    data_path = fullfile(current_script_path, '..', 'Data');
+    
+    % 如果目录不存在，则创建它
+    if ~exist(data_path, 'dir')
+        mkdir(data_path);
+    end
+    
+    % 添加当前目录及子目录到搜索路径 
+    addpath(genpath(fileparts(current_script_path)));
     
     try
         %% 0. 参数配置及数据加载
@@ -102,10 +115,10 @@ function main()
         
         fprintf('开始加载数据...\n');
         % 加载地形数据
-        terrainData = load('Data/241216_MapPoint_900_900.mat');        % 地形数据
+        terrainData = load(fullfile(data_path, '241216_MapPoint_900_900.mat'));        % 地形数据
         
         % 加载AUV路径数据
-        pathFile = load('Data/250103_PathFollowing_1.mat');              % 原始路径
+        pathFile = load(fullfile(data_path, '250103_PathFollowing_1.mat'));              % 原始路径
         pathData = pathFile.PathFollowing;
         fprintf('数据加载完成\n\n');
         
@@ -121,7 +134,7 @@ function main()
         
         %% 3. 后处理与子图生成
         fprintf('开始后处理与子图生成...\n');
-        postprocessData(recoder, insPath, insError);
+        postprocessData(recoder, insPath, insError,data_path);
         fprintf('后处理与子图生成完成\n\n');
         
         fprintf('整个处理流程已完成！\n');

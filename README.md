@@ -4,6 +4,8 @@
 
 本工具用于实现多波束声呐对海底地形的模拟采集。通过仿真AUV运动并模拟多波束声呐扫测过程，生成适用于水下SLAM研究的仿真数据集。
 
+详细仓库介绍可参阅[DeepWiki](https://deepwiki.com/Chi-hong22/MB-TerrainSim)
+
 ## 原理简介
 
 本工具的主要工作原理包括：

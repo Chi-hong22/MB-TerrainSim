@@ -12,7 +12,7 @@
 % 版本信息：
 %   当前版本：v1.1
 %   创建日期：241217
-%   最后修改：250104
+%   最后修改：250429
 %
 % 版本历史：
 %   v1.1 (250104) - 更新
@@ -132,9 +132,17 @@ zlabel('深度 (m)');
 %% 保存点云数据（可选）
 % dlmwrite(OUTPUT_FILENAME, point_cloud, 'delimiter', ' ');
 
-current_path = pwd;
+% 获取当前脚本所在路径
+current_script_path = fileparts(mfilename('fullpath'));
+% 设置存储路径为当前脚本路径的上一级文件夹下的Data文件夹
+data_path = fullfile(current_script_path, '..', 'Data');
+
+% 如果目录不存在，则创建它
+if ~exist(data_path, 'dir')
+    mkdir(data_path);
+end
+
 save_date_time = datetime('now');
 filename = sprintf('%02d%02d%02d_recoder.mat', ...
    mod(year(save_date_time),100), month(save_date_time), day(save_date_time));
-data_save_path = fullfile(current_path, 'Data');
-save(fullfile(data_save_path, filename), 'recoder');
+save(fullfile(data_path, filename), 'recoder');

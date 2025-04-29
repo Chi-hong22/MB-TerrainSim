@@ -12,7 +12,7 @@
 % 版本信息：
 %   当前版本：v1.1
 %   创建日期：241219
-%   最后修改：250104
+%   最后修改：250429
 %
 % 版本历史：
 %   v1.1 (250104) - 更新
@@ -60,14 +60,22 @@ clc;
 clear;
 close all;
 
-% 获取当前工作目录
-current_path = pwd;
+% 获取当前脚本所在路径
+current_script_path = fileparts(mfilename('fullpath'));
+% 设置存储路径为当前脚本路径的上一级文件夹下的Data文件夹
+data_path = fullfile(current_script_path, '..', 'Data');
+
+% 如果目录不存在，则创建它
+if ~exist(data_path, 'dir')
+    mkdir(data_path);
+end
+
 % 添加当前目录及子目录到搜索路径 
-addpath(genpath(current_path));
+addpath(genpath(fileparts(current_script_path)));
 
 % 载入数据
-load(fullfile('Data', '250104_recoder.mat'));        % 多波束记录数据
-load(fullfile('Data', '250104_Ins_path_simulated_data.mat')); % 惯导轨迹数据
+load(fullfile(data_path, '250104_recoder.mat'));        % 多波束记录数据
+load(fullfile(data_path, '250104_Ins_path_simulated_data.mat')); % 惯导轨迹数据
 fprintf('Step 1 - 载入数据完成\n');
 
 %% 数据预处理 - 添加误差
@@ -85,7 +93,7 @@ fprintf('Step 3.1 - 子地图划分完成\n');
 save_date_time = datetime('now');
 submap_filename = sprintf('%02d%02d%02d_sub_maps_data.mat', ...
                         mod(year(save_date_time),100), month(save_date_time), day(save_date_time));
-data_save_path = fullfile(current_path, 'Data');
+data_save_path = fullfile(data_path, submap_filename);
 save(fullfile(data_save_path, submap_filename), 'submap_data');
 fprintf('Step 3.2 - 子地图数据保存完成: %s\n', submap_filename);
 
@@ -93,13 +101,13 @@ fprintf('Step 3.2 - 子地图数据保存完成: %s\n', submap_filename);
 % 创建保存目录
 save_date_str = sprintf('%02d%02d%02d_sub_maps', ...
                         mod(year(save_date_time),100), month(save_date_time), day(save_date_time));
-submap_root_dir = fullfile(current_path, 'Data', save_date_str);
+submap_root_dir = fullfile(data_path, save_date_str);
 submap_txt_dir = fullfile(submap_root_dir, 'TXT_sub_maps');
 submap_pcd_dir = fullfile(submap_root_dir, 'PCD_sub_maps');
 % 创建目录
 if ~exist(submap_txt_dir, 'dir') || ~exist(submap_pcd_dir, 'dir')
     try
-        mkdir(fullfile(current_path, 'Data'));
+        mkdir(fullfile(data_path));
         mkdir(submap_root_dir);
         mkdir(submap_txt_dir);
         mkdir(submap_pcd_dir);
