@@ -61,7 +61,7 @@ clc;
 
 % 加载地形数据
 % load XYZ.mat; % 牛师兄原始地形数据
-load Data/241216_MapPoint_900_900.mat; % NESP地形数据
+load Data/MapPoint_900_900.mat; % NESP地形数据
 % 对NESP地形数据进行放缩
 X = 10 * X ;
 Y = 10 * Y ;
@@ -75,7 +75,7 @@ Y = 10 * Y ;
 % auv_heading = trajectory_data.path(:, 3);   % AUV艏向角
 
 % NESP中沙礁数据路径
-load Data/250104_Processed_path_data.mat;
+load Data/250826_Processed_path_data.mat;
 auv_x = processed_path(:, 1);    % AUV x坐标
 auv_y = processed_path(:, 2);    % AUV y坐标
 auv_heading = processed_path(:, 3);   % AUV艏向角，角度制

@@ -10,11 +10,15 @@
 %   单位：哈尔滨工程大学
 %
 % 版本信息：
-%   当前版本：v1.1
+%   当前版本：v1.2
 %   创建日期：241219
-%   最后修改：250429
+%   最后修改：250826
 %
 % 版本历史：
+%   v1.2 (250826) - 新增INS误差检测功能
+%       + 支持固定文件名的INS误差数据检测
+%       + 添加条件性误差注入逻辑
+%       + 优化日志输出和错误处理
 %   v1.1 (250104) - 更新
 %       + 集成惯导误差数据处理
 %       + 优化子地图生成算法
@@ -26,7 +30,7 @@
 %
 % 输入文件：
 %   - *_recoder.mat                  - 多波束记录数据
-%   - *_Ins_path_simulated_data.mat  - 惯导轨迹数据
+%   - *_Ins_path_simulated_data.mat  - 惯导轨迹数据（可选，不存在时跳过误差注入）
 %
 % 输出文件：
 %   - *_sub_maps_data.mat           - 子地图数据
@@ -74,13 +78,25 @@ end
 addpath(genpath(fileparts(current_script_path)));
 
 % 载入数据
-load(fullfile(data_path, '250104_recoder.mat'));        % 多波束记录数据
-load(fullfile(data_path, '250104_Ins_path_simulated_data.mat')); % 惯导轨迹数据
-fprintf('Step 1 - 载入数据完成\n');
+recoder_file = '250826_recoder.mat';
+load(fullfile(data_path, recoder_file));
 
-%% 数据预处理 - 添加误差
-recoder_with_ins_error = addNoiseToRecorder(recoder, ins_path_simulated, ins_simulated_error);
-fprintf('Step 2 - 误差添加完成\n');
+ins_file = fullfile(data_path, '250826_Ins_path_simulated_data.mat');
+if exist(ins_file, 'file')
+    S = load(ins_file);
+    if isfield(S,'ins_path_simulated') && isfield(S,'ins_simulated_error')
+        recoder_with_ins_error = addNoiseToRecorder(recoder, S.ins_path_simulated, S.ins_simulated_error);
+        fprintf('[INFO] dataPostproccess_createSubmap: 使用 250104_Ins_path_simulated_data.mat 应用误差。\n');
+    else
+        recoder_with_ins_error = recoder;
+        fprintf('[WARN] dataPostproccess_createSubmap: INS 文件缺少关键字段，跳过噪声注入。\n');
+    end
+else
+    recoder_with_ins_error = recoder;
+    fprintf('[INFO] dataPostproccess_createSubmap: 未发现固定 INS 文件，使用原始 recoder。\n');
+end
+fprintf('Step 1 - 载入数据完成\n');
+fprintf('Step 2 - 误差处理完成\n');
 
 % 可视化点云
 visualizeRecoderPointCloud(recoder_with_ins_error, 'cloud');
@@ -93,8 +109,7 @@ fprintf('Step 3.1 - 子地图划分完成\n');
 save_date_time = datetime('now');
 submap_filename = sprintf('%02d%02d%02d_sub_maps_data.mat', ...
                         mod(year(save_date_time),100), month(save_date_time), day(save_date_time));
-data_save_path = fullfile(data_path, submap_filename);
-save(fullfile(data_save_path, submap_filename), 'submap_data');
+save(fullfile(data_path, submap_filename), 'submap_data');
 fprintf('Step 3.2 - 子地图数据保存完成: %s\n', submap_filename);
 
 %% 子地图坐标系转换

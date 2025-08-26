@@ -10,7 +10,7 @@
 %   单位：哈尔滨工程大学
 %
 % 版本信息：
-%   当前版本：v1.1
+%   当前版本：v1.2
 %   创建日期：250104
 %   最后修改：250429
 %
@@ -21,6 +21,10 @@
 %       + 添加完整工具链处理流程
 %       + 优化参数配置结构
 %       + 增强错误处理机制
+%   v1.2 (250826) - INS误差开关功能
+%       + 新增 enable_ins_error 开关控制INS误差模拟
+%       + 支持理想路径和含误差路径双模式运行
+%       + 优化路径选择逻辑和错误处理
 %
 % 处理流程：
 %   1. 数据预处理
@@ -35,10 +39,12 @@
 %       - 数据格式化与导出
 %
 % 配置参数：
-%   1. 路径处理参数
+%   1. 误差控制参数
+%       enable_ins_error - INS误差模拟开关(true/false, 默认true)
+%   2. 路径处理参数
 %       target_points    - 降采样后的目标点数(默认70000)
 %       scale_factor    - 坐标系缩放系数(默认6)
-%   2. 惯导误差参数
+%   3. 惯导误差参数（当enable_ins_error=true时生效）
 %       line_std        - 直线段随机误差标准差[x,y]
 %       turn_std        - 转弯段随机误差标准差[x,y]
 %       cumulative      - 累积误差系数[x,y]
@@ -101,9 +107,11 @@ function main()
     
     try
         %% 0. 参数配置及数据加载
-        % 路径处理参数
+    % 路径处理参数
         params.target_points = 70000;      % 降采样目标点数70000
         params.scale_factor = 6;           % 坐标缩放系数
+        % INS误差开关（新增）
+        params.enable_ins_error = false;    % 设为 false 可关闭 INS 误差模拟
         
         % 误差模拟参数
         params.error.line_std = [0.03, 0.05];          % 直线段误差标准差 [x, y]
@@ -115,10 +123,10 @@ function main()
         
         fprintf('开始加载数据...\n');
         % 加载地形数据
-        terrainData = load(fullfile(data_path, '241216_MapPoint_900_900.mat'));        % 地形数据
+        terrainData = load(fullfile(data_path, 'MapPoint_900_900.mat'));        % 地形数据
         
         % 加载AUV路径数据
-        pathFile = load(fullfile(data_path, '250103_PathFollowing_1.mat'));              % 原始路径
+        pathFile = load(fullfile(data_path, 'NESP_PathFollowing.mat'));              % 原始路径
         pathData = pathFile.PathFollowing;
         fprintf('数据加载完成\n\n');
         

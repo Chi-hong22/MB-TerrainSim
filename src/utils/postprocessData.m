@@ -13,11 +13,15 @@
 %   单位：哈尔滨工程大学
 %
 % 版本信息：
-%   当前版本：v1.2
+%   当前版本：v1.3
 %   创建日期：250104
 %   最后修改：250429
 %
 % 版本历史：
+%   v1.3 (250826) - 新增INS误差开关支持
+%       + 支持检测空 INS 路径并跳过噪声注入
+%       + 优化兼容性处理和错误日志
+%       + 改进空数组语义处理
 %   v1.2 (250104) - 功能增强
 %       + 新增PCD格式输出支持
 %       + 优化子地图生成算法
@@ -27,8 +31,8 @@
 %
 % 输入参数：
 %   recoder   - [Nx(3M+5) double] 原始多波束采集记录数据，包含AUV位姿和测深点
-%   insPath   - [Nx3 double] INS路径数据 [x y heading]
-%   insError  - [Nx3 double] INS误差数据 [error_x error_y error_heading]
+%   insPath   - [Nx3 double] INS路径数据，空数组[]表示未启用INS误差
+%   insError  - [Nx3 double] INS误差数据，空数组[]表示未启用INS误差
 %   submap_root_dir - [string] 子地图根目录路径，用于存储生成的子地图数据
 %
 % 输出参数：
@@ -48,6 +52,7 @@
 %   1. 确保输入数据维度匹配
 %   2. 需要足够的磁盘空间存储结果
 %   3. 处理大量数据时注意内存使用
+%   4. 空INS参数会跳过噪声注入，直接使用原始记录
 %
 % 调用示例：
 %   % 指定数据目录为项目根目录下的Data文件夹
@@ -62,14 +67,25 @@
 %   - submap2PCD
 
 function postprocessData(recoder, insPath, insError, submap_root_dir)
-    % 数据预处理 - 添加误差
-    recoder_with_ins_error = addNoiseToRecorder(recoder, insPath, insError);
+    % 兼容空 INS（未启用误差模拟）
+    if nargin < 2 || isempty(insPath)
+        hasIns = false;
+    else
+        hasIns = ~isempty(insPath);
+    end
     
-    % 可视化原始点云
+    if hasIns
+        recoder_with_ins_error = addNoiseToRecorder(recoder, insPath, insError);
+    else
+        recoder_with_ins_error = recoder;
+        fprintf('[INFO] postprocessData: 未提供 INS 路径，跳过噪声注入。\n');
+    end
+
+    % 可视化点云（理想或带误差）
     visualizeRecoderPointCloud(recoder_with_ins_error, 'cloud');
 
-    % 生成子地图
-    [~,submap_data,~] = createSubmap(recoder,recoder_with_ins_error);
+    % 生成子地图（使用原始与处理后组合逻辑）
+    [~,submap_data,~] = createSubmap(recoder, recoder_with_ins_error);
     
     % % 可视化所有子地图点云
     % figure('Name', '所有子地图点云可视化', 'NumberTitle', 'off');
