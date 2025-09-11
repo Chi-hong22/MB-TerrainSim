@@ -69,7 +69,7 @@
 % 参见函数：
 %   generateSimulatedInsPath, downsample, plot
 
-function [processedPath, insPath, insError] = preprocessData(pathData, params)    
+function [processedPath, insPath, insError] = preprocessData(pathData, params, cfg)    
     original_following = pathData;
 
     %% 开关默认值（向后兼容）
@@ -90,13 +90,32 @@ function [processedPath, insPath, insError] = preprocessData(pathData, params)
     
     fprintf(' - 降采样: %d -> %d 点\n', n, size(following_downsampled,1));
     
-    % 删除多余数据（小数据保护）
-    if size(following_downsampled,1) > 600
-        following_downsampled = following_downsampled(501:end, :);  % 删除前 500 行
+    % ===== 以下数据裁剪逻辑已被 config.m 统一管理，保留注释供参考 =====
+    % 删除多余数据!!!(选用) - 原硬编码逻辑
+    % NESP 700开始, noNESP 800开始
+    % if size(following_downsampled,1) > 800
+    %     following_downsampled = following_downsampled(801:end, :);  % 删除前 800 行
+    % end
+    % shortTest - 原硬编码逻辑
+    % following_downsampled = following_downsampled(701:5000, :);      % shortTest,只用1101:5000行
+    
+    % 使用配置文件中的数据裁剪逻辑
+    if cfg.preprocess.trim_start_enabled && size(following_downsampled,1) > cfg.preprocess.trim_start_index
+        following_downsampled = following_downsampled(cfg.preprocess.trim_start_index:end, :);
+        fprintf(' - 数据头部裁剪: 删除前 %d 行\n', cfg.preprocess.trim_start_index - 1);
     end
-
-    % % shortTest
-    % following_downsampled = following_downsampled(501:7000, :);      % shortTest,只用501:7000行
+    
+    % 短时测试模式
+    if cfg.preprocess.short_test_enabled
+        start_idx = cfg.preprocess.short_test_range(1);
+        end_idx = cfg.preprocess.short_test_range(2);
+        if size(following_downsampled,1) >= end_idx
+            following_downsampled = following_downsampled(start_idx:end_idx, :);
+            fprintf(' - 短时测试模式: 使用数据行 %d 到 %d\n', start_idx, end_idx);
+        else
+            fprintf(' - 警告: 数据不足以进行短时测试，跳过短时测试设置\n');
+        end
+    end
     
     %% 计算艏向角 - 并行优化版本
     % n_points = size(following_downsampled, 1);

@@ -65,21 +65,34 @@ clc;
 clear;
 close all;
 
-%% INS误差控制开关
-% enable_ins_error = true; % 设为 false 可关闭 INS 误差模拟
-enable_ins_error = false; 
+%% 加载配置文件
+cfg = config();
+
+%% ===== 以下参数已被 config.m 统一管理，保留注释供参考 =====
+% enable_ins_error = true; % 设为 false 可关闭 INS 误差模拟 -> 现在使用 cfg.ins_error.enable
+% enable_ins_error = false; -> 现在使用 cfg.ins_error.enable
+
+% 使用配置文件中的参数
+enable_ins_error = cfg.ins_error.enable; 
 %% 载入数据
 
-load ./Data/NESP_PathFollowing.mat % NESP地形数据
-% load ./Data/noNESP_PathFollowing.mat
+% ===== 以下数据文件名已被 config.m 统一管理，保留注释供参考 =====
+% load ./Data/NESP_PathFollowing.mat % NESP地形数据 -> 现在使用 cfg.path_file
+% load ./Data/noNESP_PathFollowing.mat -> 现在使用 cfg.path_file
+
+% 使用配置文件中的路径数据
+load(fullfile('./Data', cfg.path_file));
 original_following = PathFollowing; 
 
-fprintf('Step 1 - 载入数据\n');
+fprintf('Step 1 - 载入数据 (%s)\n', cfg.path_file);
 
 %% 数据降采样
+% ===== 以下参数已被 config.m 统一管理，保留注释供参考 =====
+% target_points = 70000; -> 现在使用 cfg.preprocess.target_points
+
 % 计算降采样率
 n = length(original_following);
-target_points = 70000;
+target_points = cfg.preprocess.target_points;
 downsample_rate = ceil(n / target_points);
 
 % 降采样
@@ -90,8 +103,26 @@ end
 
 fprintf('Step 2 - 降采样: %d -> %d 点\n', n, size(following_downsampled,1));
 
-% 删除起步的多余数据
-following_downsampled = following_downsampled(701:end, :);      % 删除前 700 行
+% ===== 以下数据裁剪逻辑已被 config.m 统一管理，保留注释供参考 =====
+% following_downsampled = following_downsampled(701:end, :);      % 删除前 700 行 -> 现在使用配置文件
+
+% 使用配置文件中的数据裁剪逻辑
+if cfg.preprocess.trim_start_enabled && size(following_downsampled,1) > cfg.preprocess.trim_start_index
+    following_downsampled = following_downsampled(cfg.preprocess.trim_start_index:end, :);
+    fprintf('Step 2.1 - 数据头部裁剪: 删除前 %d 行\n', cfg.preprocess.trim_start_index - 1);
+end
+
+% 短时测试模式
+if cfg.preprocess.short_test_enabled
+    start_idx = cfg.preprocess.short_test_range(1);
+    end_idx = cfg.preprocess.short_test_range(2);
+    if size(following_downsampled,1) >= end_idx
+        following_downsampled = following_downsampled(start_idx:end_idx, :);
+        fprintf('Step 2.2 - 短时测试模式: 使用数据行 %d 到 %d\n', start_idx, end_idx);
+    else
+        fprintf('Step 2.2 - 警告: 数据不足以进行短时测试，跳过短时测试设置\n');
+    end
+end
 
 %% 计算艏向角 - 并行优化版本
 % n_points = size(following_downsampled, 1);
@@ -109,9 +140,12 @@ following_downsampled = following_downsampled(701:end, :);      % 删除前 700 
 % fprintf('Step 3 - 并行计算艏向角完成\n');
 
 %% 处理数据格式并保存
+% ===== 以下缩放参数已被 config.m 统一管理，保留注释供参考 =====
+% following_downsampled_temp(:, 1:2) = following_downsampled(:,1:2)/6; % 缩放坐标 -> 现在使用 cfg.preprocess.scale_factor
+
 % 合并路径和艏向角数据
 following_downsampled_temp = following_downsampled;
-following_downsampled_temp(:, 1:2) = following_downsampled(:,1:2)/6; % 缩放坐标
+following_downsampled_temp(:, 1:2) = following_downsampled(:,1:2) / cfg.preprocess.scale_factor; % 使用配置文件中的缩放系数
 following_downsampled_temp(:, 3) = deg2rad(following_downsampled(:,3));% 添加角度转弧度的转换步骤
 following_downsampled_temp(:, 3) = following_downsampled(:,3);
 processed_path = following_downsampled_temp;
@@ -163,17 +197,29 @@ if enable_ins_error
 
     gps_path = processed_path; % Nx3 矩阵 [x, y, heading]
 
-    % 设置误差参数
-    line_error_std_x = 0.03; % 直线部分 X 方向误差标准差
-    line_error_std_y = 0.05; % 直线部分 Y 方向误差标准差
-    turn_error_std_x = 0.0005; % 转弯部分 X 方向误差标准差
-    turn_error_std_y = 0.02; % 转弯部分 Y 方向误差标准差
-    cumulative_error_factor_x = 0.019; % X 方向累积误差因子
-    cumulative_error_factor_y = 0.0025; % Y 方向累积误差因子
-    turn_error_factor_x = 0.01; % 转弯误差 X 方向系数
-    turn_error_factor_y = 0.01; % 转弯误差 Y 方向系数
-    no_error_fraction = 0.03; % 前 3% 的路径不增加误差
-    window_size = 40; % 滑动窗口大小
+    % ===== 以下误差参数已被 config.m 统一管理，保留注释供参考 =====
+    % line_error_std_x = 0.03; % 直线部分 X 方向误差标准差 -> 现在使用 cfg.ins_error.line_std(1)
+    % line_error_std_y = 0.05; % 直线部分 Y 方向误差标准差 -> 现在使用 cfg.ins_error.line_std(2)
+    % turn_error_std_x = 0.0005; % 转弯部分 X 方向误差标准差 -> 现在使用 cfg.ins_error.turn_std(1)
+    % turn_error_std_y = 0.02; % 转弯部分 Y 方向误差标准差 -> 现在使用 cfg.ins_error.turn_std(2)
+    % cumulative_error_factor_x = 0.019; % X 方向累积误差因子 -> 现在使用 cfg.ins_error.cumulative(1)
+    % cumulative_error_factor_y = 0.0025; % Y 方向累积误差因子 -> 现在使用 cfg.ins_error.cumulative(2)
+    % turn_error_factor_x = 0.01; % 转弯误差 X 方向系数 -> 现在使用 cfg.ins_error.turn_factor(1)
+    % turn_error_factor_y = 0.01; % 转弯误差 Y 方向系数 -> 现在使用 cfg.ins_error.turn_factor(2)
+    % no_error_fraction = 0.03; % 前 3% 的路径不增加误差 -> 现在使用 cfg.ins_error.no_error_fraction
+    % window_size = 40; % 滑动窗口大小 -> 现在使用 cfg.ins_error.window_size
+    
+    % 设置误差参数 - 从配置文件获取
+    line_error_std_x = cfg.ins_error.line_std(1);
+    line_error_std_y = cfg.ins_error.line_std(2);
+    turn_error_std_x = cfg.ins_error.turn_std(1);
+    turn_error_std_y = cfg.ins_error.turn_std(2);
+    cumulative_error_factor_x = cfg.ins_error.cumulative(1);
+    cumulative_error_factor_y = cfg.ins_error.cumulative(2);
+    turn_error_factor_x = cfg.ins_error.turn_factor(1);
+    turn_error_factor_y = cfg.ins_error.turn_factor(2);
+    no_error_fraction = cfg.ins_error.no_error_fraction;
+    window_size = cfg.ins_error.window_size;
 
     % 调用函数生成仿真路径
     [ins_path_simulated, ins_simulated_error] = generateSimulatedInsPath(gps_path, ...

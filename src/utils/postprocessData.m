@@ -66,7 +66,7 @@
 %   - coordinateTransform
 %   - submap2PCD
 
-function postprocessData(recoder, insPath, insError, submap_root_dir)
+function postprocessData(recoder, insPath, insError, submap_root_dir, cfg)
     % 兼容空 INS（未启用误差模拟）
     if nargin < 2 || isempty(insPath)
         hasIns = false;
@@ -84,8 +84,42 @@ function postprocessData(recoder, insPath, insError, submap_root_dir)
     % 可视化点云（理想或带误差）
     visualizeRecoderPointCloud(recoder_with_ins_error, 'cloud');
 
+    % 从配置文件构建子地图参数
+    submap_params.heading_threshold = cfg.submap.heading_threshold;
+    submap_params.frames_per_submap = cfg.submap.frames_per_submap;
+    submap_params.window_size = cfg.submap.window_size;
+
     % 生成子地图（使用原始与处理后组合逻辑）
-    [~,submap_data,~] = createSubmap(recoder, recoder_with_ins_error);
+    [~,submap_data,~] = createSubmap(recoder, recoder_with_ins_error, submap_params);
+    
+    % 输出子地图生成统计信息
+    num_submaps = length(submap_data);
+    fprintf('\n======================================\n');
+    fprintf('📍 子地图生成完成！\n');
+    fprintf('📊 生成子地图数量: %d 个\n', num_submaps);
+    
+    % 输出详细统计信息
+    if num_submaps > 0
+        submap_sizes = cellfun(@(x) size(x, 1), submap_data);
+        fprintf('📈 子地图统计:\n');
+        fprintf('   - 平均帧数: %.1f 帧/子地图\n', mean(submap_sizes));
+        fprintf('   - 最大帧数: %d 帧\n', max(submap_sizes));
+        fprintf('   - 最小帧数: %d 帧\n', min(submap_sizes));
+        fprintf('   - 总帧数: %d 帧\n', sum(submap_sizes));
+        
+        % 显示每个子地图的帧数（如果子地图数量不太多的话）
+        if num_submaps <= 20
+            fprintf('📋 各子地图帧数: [');
+            for i = 1:num_submaps
+                fprintf('%d', submap_sizes(i));
+                if i < num_submaps
+                    fprintf(', ');
+                end
+            end
+            fprintf('] 帧\n');
+        end
+    end
+    fprintf('======================================\n\n');
     
     % % 可视化所有子地图点云
     % figure('Name', '所有子地图点云可视化', 'NumberTitle', 'off');
@@ -116,4 +150,10 @@ function postprocessData(recoder, insPath, insError, submap_root_dir)
     key_frame_data = coordinateTransform(submap_data, submap_txt_dir);
     
     submap2PCD(submap_txt_dir, submap_pcd_dir);
+    
+    % 输出最终完成信息
+    fprintf('✅ 后处理完成！子地图文件已保存至:\n');
+    fprintf('   📁 TXT格式: %s\n', submap_txt_dir);
+    fprintf('   📁 PCD格式: %s\n', submap_pcd_dir);
+    fprintf('   📊 共生成 %d 个子地图文件\n\n', num_submaps);
 end

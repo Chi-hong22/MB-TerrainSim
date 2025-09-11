@@ -64,6 +64,9 @@ clc;
 clear;
 close all;
 
+%% 配置文件加载
+cfg = config();
+
 % 获取当前脚本所在路径
 current_script_path = fileparts(mfilename('fullpath'));
 % 设置存储路径为当前脚本路径的上一级文件夹下的Data文件夹
@@ -102,7 +105,41 @@ fprintf('Step 2 - 误差处理完成\n');
 visualizeRecoderPointCloud(recoder_with_ins_error, 'cloud');
 
 %% 子地图生成
-[~,submap_data,~] = createSubmap(recoder,recoder_with_ins_error);
+% 从配置文件构建子地图参数
+submap_params.heading_threshold = cfg.submap.heading_threshold;
+submap_params.frames_per_submap = cfg.submap.frames_per_submap;
+submap_params.window_size = cfg.submap.window_size;
+
+[~,submap_data,~] = createSubmap(recoder,recoder_with_ins_error, submap_params);
+
+% 输出子地图生成统计信息
+num_submaps = length(submap_data);
+fprintf('\n======================================\n');
+fprintf('📍 子地图生成完成！\n');
+fprintf('📊 生成子地图数量: %d 个\n', num_submaps);
+
+% 输出详细统计信息
+if num_submaps > 0
+    submap_sizes = cellfun(@(x) size(x, 1), submap_data);
+    fprintf('📈 子地图统计:\n');
+    fprintf('   - 平均帧数: %.1f 帧/子地图\n', mean(submap_sizes));
+    fprintf('   - 最大帧数: %d 帧\n', max(submap_sizes));
+    fprintf('   - 最小帧数: %d 帧\n', min(submap_sizes));
+    fprintf('   - 总帧数: %d 帧\n', sum(submap_sizes));
+    
+    % 显示每个子地图的帧数（如果子地图数量不太多的话）
+    if num_submaps <= 20
+        fprintf('📋 各子地图帧数: [');
+        for i = 1:num_submaps
+            fprintf('%d', submap_sizes(i));
+            if i < num_submaps
+                fprintf(', ');
+            end
+        end
+        fprintf('] 帧\n');
+    end
+end
+fprintf('======================================\n');
 fprintf('Step 3.1 - 子地图划分完成\n');
 
 % 保存子地图数据
@@ -138,6 +175,13 @@ fprintf('Step 4 - 坐标转换完成\n');
 %% 生成PCD格式子地图
 submap2PCD(submap_txt_dir, submap_pcd_dir)
 fprintf('Step 5 - PCD格式转换完成\n');
+
+% 输出最终完成信息
+fprintf('\n✅ 数据后处理完成！子地图文件已保存至:\n');
+fprintf('   📁 TXT格式: %s\n', submap_txt_dir);
+fprintf('   📁 PCD格式: %s\n', submap_pcd_dir);
+fprintf('   📊 共生成 %d 个子地图文件\n', num_submaps);
+fprintf('   💾 子地图数据文件: %s\n\n', fullfile(data_path, submap_filename));
 
 % load KEY_FRAME.mat;
 % load path_ins.mat;
