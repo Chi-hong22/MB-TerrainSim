@@ -1,15 +1,15 @@
-function [intersect, t, u, v, xcoor] = TriangleRayIntersection (...
+function [intersect, t, u, v, xcoor] = triangleRayIntersection (...
   orig, dir, vert0, vert1, vert2, varargin)
-%TRIANGLERAYINTERSECTION Ray/triangle intersection.
-%    INTERSECT = TriangleRayIntersection(ORIG, DIR, VERT1, VERT2, VERT3) 
+%triangleRayIntersection Ray/triangle intersection.
+%    INTERSECT = triangleRayIntersection(ORIG, DIR, VERT1, VERT2, VERT3) 
 %      calculates ray/triangle intersections using the algorithm proposed
-%      BY Möller and Trumbore (1997), implemented as highly vectorized 
+%      BY Mï¿½ller and Trumbore (1997), implemented as highly vectorized 
 %      MATLAB code. The ray starts at ORIG and points toward DIR. The 
 %      triangle is defined by vertix points: VERT1, VERT2, VERT3. All input  
 %      arrays are in Nx3 or 1x3 format, where N is number of triangles or 
 %      rays.
 % 
-%   [INTERSECT, T, U, V, XCOOR] = TriangleRayIntersection(...) 
+%   [INTERSECT, T, U, V, XCOOR] = triangleRayIntersection(...) 
 %     Returns:
 %     * Intersect - boolean array of length N informing which line and
 %                 triangle pair intersect
@@ -19,7 +19,7 @@ function [intersect, t, u, v, xcoor] = TriangleRayIntersection (...
 %     * u,v - barycentric coordinates of the intersection point 
 %     * xcoor - carthesian coordinates of the intersection point
 %
-%   TriangleRayIntersection(...,'param','value','param','value'...) allows
+%   triangleRayIntersection(...,'param','value','param','value'...) allows
 %    additional param/value pairs to be used. Allowed parameters:
 %    * planeType - 'one sided' or 'two sided' (default) - how to treat
 %        triangles. In 'one sided' version only intersections in single
@@ -66,7 +66,7 @@ function [intersect, t, u, v, xcoor] = TriangleRayIntersection (...
 %  have to be cloned to have the right size. Use "repmat(A,size(B,1),1)".
 %
 % Based on:
-%  *"Fast, minimum storage ray-triangle intersection". Tomas Möller and
+%  *"Fast, minimum storage ray-triangle intersection". Tomas Mï¿½ller and
 %    Ben Trumbore. Journal of Graphics Tools, 2(1):21--28, 1997.
 %    http://www.graphics.cornell.edu/pubs/1997/MT97.pdf
 %  * http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/raytri/

@@ -43,7 +43,7 @@
 %   - Parallel Computing Toolbox
 %
 % 参见函数：
-%   parpool, World2Body
+%   parpool, world2Body
 
 function KEY_FRAME = coordinateTransform(sub_maps, folder_save)
 
@@ -88,7 +88,7 @@ function KEY_FRAME = coordinateTransform(sub_maps, folder_save)
             end
             
             % 批量坐标转换
-            transformed_points = World2Body([key_frame_position, key_frame_direction], points_all);
+            transformed_points = world2Body([key_frame_position, key_frame_direction], points_all);
             
             % 验证转换结果
             validateResults(transformed_points, key_frame_position);

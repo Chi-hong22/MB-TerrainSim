@@ -69,7 +69,7 @@ function [sub_maps, sub_maps_with_error, segment_info] = createSubmap(recoder, r
     [sub_maps, sub_maps_with_error] = createSubmapsFromSegments(recoder, recoder_with_ins_error, segment_info, params.frames_per_submap, 75);
     
     % 4. 可视化结果
-    visualizeSubmaps(recoder, recoder_with_ins_error, segment_info, sub_maps, sub_maps_with_error);
+    visualizeSubmapSeg(recoder, recoder_with_ins_error, segment_info, sub_maps, sub_maps_with_error);
 
 end
 
@@ -247,7 +247,7 @@ function [sub_maps, sub_maps_with_error] = createSubmapsFromSegments(recoder, re
     end
 end
 
-function visualizeSubmaps(recoder, recoder_with_ins_error, segment_info, sub_maps, sub_maps_with_error)
+function visualizeSubmapSeg(recoder, recoder_with_ins_error, segment_info, sub_maps, sub_maps_with_error)
     % 1. 显示直线段/转弯段划分情况
     figure('Name', '直线/转弯分割可视化', 'Position', [100 100 1000 400]);
     

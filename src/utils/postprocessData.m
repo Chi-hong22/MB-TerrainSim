@@ -147,10 +147,26 @@ function postprocessData(recoder, insPath, insError, submap_root_dir, cfg)
     mkdir(submap_pcd_dir);
     
     % 坐标转换和PCD生成
-    key_frame_data = coordinateTransform(submap_data, submap_txt_dir);
+    coordinateTransform(submap_data, submap_txt_dir);
     
     submap2PCD(submap_txt_dir, submap_pcd_dir);
-    
+
+    % 可选: 全局坐标聚合可视化
+    try
+        if isfield(cfg, 'visualization') && isfield(cfg.visualization, 'enable_global_view') && cfg.visualization.enable_global_view
+            fprintf('[Viz] 开始加载PCD/PDC并进行全局可视化...\n');
+            % 加载并变换到全局坐标
+            measurements = loadAllSubmaps(submap_pcd_dir, 'Verbose', true, 'TransformToGlobal', true, 'UseParallel', true);
+            if ~isempty(measurements)
+                visualizeSubmaps(measurements, 'ColorBy', 'z', 'SampleRate', 1.0, 'Title', '子地图聚合(全局坐标)');
+            else
+                warning('[Viz] 未加载到有效子地图，跳过可视化');
+            end
+        end
+    catch vizErr
+        warning(vizErr.identifier, '%s', vizErr.message);
+    end
+
     % 输出最终完成信息
     fprintf('✅ 后处理完成！子地图文件已保存至:\n');
     fprintf('   📁 TXT格式: %s\n', submap_txt_dir);

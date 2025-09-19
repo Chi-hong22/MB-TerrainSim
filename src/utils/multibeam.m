@@ -47,7 +47,7 @@
 %   recoder = multibeam(X, Y, Z, poses, -5, 100, 60, 256);
 %
 % 依赖函数：
-%   - TriangleRayIntersection
+%   - triangleRayIntersection
 %   - getPart (内部函数)
 
 function recoder = multibeam(X, Y, Z, poseList, depth, range, angle, beamnum)
@@ -122,7 +122,7 @@ function recoder = multibeam(X, Y, Z, poseList, depth, range, angle, beamnum)
             zb = -range*cosd(theta);
 
             dir = [-yb*sind(heading_i), yb*cosd(heading_i), zb];
-            [~, ~, ~, ~, point] = TriangleRayIntersection(orig, dir, vert1, vert2, vert3, 'fullReturn', false, 'lineType', 'ray');
+            [~, ~, ~, ~, point] = triangleRayIntersection(orig, dir, vert1, vert2, vert3, 'fullReturn', false, 'lineType', 'ray');
             tempt(1, 5 + count*3-2: 5 + count*3) = point;
 
     %         hold on; plot3(point(1), point(2), point(3), 'r*');

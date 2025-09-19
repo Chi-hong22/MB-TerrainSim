@@ -176,6 +176,21 @@ fprintf('Step 4 - 坐标转换完成\n');
 submap2PCD(submap_txt_dir, submap_pcd_dir)
 fprintf('Step 5 - PCD格式转换完成\n');
 
+% 全局坐标聚合可视化
+try
+    if isfield(cfg, 'visualization') && isfield(cfg.visualization,'enable_global_view') && cfg.visualization.enable_global_view
+        fprintf('[Viz] 加载PDC并进行全局可视化...\n');
+        measurements = loadAllSubmaps(submap_pcd_dir, 'Verbose', true, 'TransformToGlobal', true, 'UseParallel', true);
+        if ~isempty(measurements)
+            visualizeSubmaps(measurements, 'ColorBy','z', 'SampleRate', cfg.visualization.sample_rate, 'Title','子地图聚合(全局坐标)');
+        else
+            warning('Viz: 未加载到有效子地图，跳过可视化');
+        end
+    end
+catch vizErr
+    warning(vizErr.identifier, '%s', vizErr.message);
+end
+
 % 输出最终完成信息
 fprintf('\n✅ 数据后处理完成！子地图文件已保存至:\n');
 fprintf('   📁 TXT格式: %s\n', submap_txt_dir);
@@ -185,7 +200,7 @@ fprintf('   💾 子地图数据文件: %s\n\n', fullfile(data_path, submap_file
 
 % load KEY_FRAME.mat;
 % load path_ins.mat;
-% update_pdc_files('D:\code\算法—整理版\工具\submap_regular\submap',...
+% updatePCDViewpoint('D:\code\算法—整理版\工具\submap_regular\submap',...
 %                 'D:\code\算法—整理版\工具\子地图与惯导固连\惯导路径子地图' , ...
 %                 KEY_FRAME, ...
 %                 path_ins)

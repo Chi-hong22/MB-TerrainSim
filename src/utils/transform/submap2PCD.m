@@ -32,7 +32,7 @@
 % 输入文件格式（sub_map_*.txt）：
 %   第1行：关键帧索引
 %   第2行：关键帧位置 [x y z] 
-%   第3行：速度方向角phi（角度制）
+%   第3行：速度方向角phi（角度制，逆时针为正）
 %   第4行及以后：点云数据 [x y z]，每行一个测深点坐标
 %
 % 输出文件格式（submap_*_frame.pdc）：
@@ -104,12 +104,15 @@ function processSingleFile(inputDir_TXT, outputDir_PCD, file, fileIdx)
    num_points = size(points, 1);
 
    % 计算四元数
+   % 约定：phi 采用数学正向（绕Z轴逆时针为正）。
+   % 若上游数据使用顺时针为正，请在读取时将 phi 取负后再传入。
    q = angle2Quaternion(phi);
 
    % 生成PCD头部
    pcdHeader = generatePCDHeader(keyframe_position, q, num_points);
 
    % 写入文件
+   % .pdc文件实际上并不是正确的PCD文件，但是bathymetric_slam可以正常使用
    outputFilePath = fullfile(outputDir_PCD, sprintf('submap_%d_frame.pdc', fileIdx));
    writeDataToPCD(outputFilePath, pcdHeader, points);
 end

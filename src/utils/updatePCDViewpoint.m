@@ -1,4 +1,4 @@
-%% update_pdc_files - PDC点云文件视点信息更新工具
+%% updatePCDViewpoint - PDC点云文件视点信息更新工具
 %
 % 功能描述：
 %   批量更新PDC点云文件中的视点信息，用于多波束数据后处理
@@ -39,7 +39,7 @@
 %
 % 调用示例：
 %   % 基础调用方式
-%   update_pdc_files('./input/', './output/', key_frames, path_data);
+%   updatePCDViewpoint('./input/', './output/', key_frames, path_data);
 %
 % 依赖工具箱：
 %   - 无特殊依赖
@@ -47,7 +47,7 @@
 % 参见函数：
 %   Phi2Quaternion, fileread, fopen
 
-function update_pdc_files(input_folder, output_folder, KEY_FRAME, path_ins)
+function updatePCDViewpoint(input_folder, output_folder, KEY_FRAME, path_ins)
     % 列出输入文件夹中所有的 .pdc 文件
     files = dir(fullfile(input_folder, 'submap_*_frame.pdc'));
     

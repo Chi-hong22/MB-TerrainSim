@@ -8,8 +8,8 @@ function cfg = config()
     % 作者：Chihong（游子昂）
     % 邮箱：you.ziang@hrbeu.edu.cn
     % 单位：哈尔滨工程大学
-    % 版本：v1.0
-    % 创建日期：2025-09-11
+    % 版本：v1.1
+    % 创建日期：2025-09-12
     %
     % 返回值：
     %   cfg - 包含所有配置参数的结构体
@@ -18,6 +18,11 @@ function cfg = config()
     %   cfg = config();
     %   target_points = cfg.preprocess.target_points;
     %
+    %% ========== 版本信息 ==========
+    cfg.version = 'v1.1';
+    cfg.created_date = '2025-09-11';
+    cfg.description = '多波束声呐仿真系统统一配置文件';
+    cfg.last_updated = '2025-09-12'; % 新增子地图参数
 
     %% ========== 通用设置 ==========
     cfg.data_path = 'Data';                              % 数据文件路径
@@ -56,11 +61,9 @@ function cfg = config()
     cfg.submap.frames_per_submap = 100;                % 每个子地图的目标帧数
     cfg.submap.window_size = 40;                       % 居中滑动窗口大小(帧), 用于检测转弯
 
-    %% ========== 版本信息 ==========
-    cfg.version = 'v1.1';
-    cfg.created_date = '2025-09-11';
-    cfg.description = '多波束声呐仿真系统统一配置文件';
-    cfg.last_updated = '2025-09-12'; % 新增子地图参数
+    %% ========== 可视化参数 ==========
+    cfg.visualization.enable_global_view = true;       % 生成PCD后进行全局坐标聚合可视化
+    cfg.visualization.sample_rate = 1.0;               % 可视化采样率
 
     %% ========== 配置验证 ==========
     % 可以在这里添加参数合理性检查

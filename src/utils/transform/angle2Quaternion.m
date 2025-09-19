@@ -27,10 +27,10 @@
 %               必选参数，范围[0, 360]
 %
 % 输出参数：
-%   quaternion - [1x4 double] 四元数数组 [w x y z]
-%                w: 实部 (cos(θ/2))
-%                x, y: 0 (仅Z轴旋转)
-%                z: 虚部 (sin(θ/2))
+%   quaternion - [1x4 double] 四元数数组 [qw qx qy qz]（与PCD VIEWPOINT格式一致）
+%                qw: 实部 (cos(θ/2))
+%                qx, qy: 0 (仅Z轴旋转)
+%                qz: 虚部 (sin(θ/2))
 %
 % 注意事项：
 %   1. 仅支持绕Z轴的旋转，不支持完整的3D旋转
@@ -57,6 +57,6 @@ function quaternion = angle2Quaternion(angle_deg)
     quat_y = 0;                   % Y轴分量（无）
     quat_z = sin(angle_rad / 2);  % Z轴分量
     
-    % 返回四元数数组 [w x y z]
+    % 返回四元数数组 [qw qx qy qz]，与PCD VIEWPOINT格式一致
     quaternion = [quat_w, quat_x, quat_y, quat_z];
 end
