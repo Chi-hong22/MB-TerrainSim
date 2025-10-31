@@ -156,7 +156,7 @@ function main()
         
         %% 2. 多波束仿真采集
         fprintf('开始多波束仿真采集...\n');
-        recoder = simulateMultibeam(processedPath, terrainData);
+        recoder = simulateMultibeam(processedPath, terrainData, cfg);
         fprintf('多波束仿真采集完成\n\n');
         
         %% 3. 后处理与子图生成

@@ -28,6 +28,12 @@
 %                   .X - 地形X坐标矩阵
 %                   .Y - 地形Y坐标矩阵
 %                   .Z - 地形深度矩阵
+%   cfg          - [struct] 配置结构体（可选）
+%                   .sonar.depth - 声呐深度（米）
+%                   .sonar.range - 最大探测距离（米）
+%                   .sonar.angle - 单侧扇面角度（度）
+%                   .sonar.beam_num - 波束数量
+%                   .sonar.terrain_offset - 地形偏移量（米）
 %
 % 输出参数：
 %   recoder - [Nx(3M+5) double] 多波束采集记录数据矩阵
@@ -42,22 +48,25 @@
 %   3. 建议预先检查内存是否充足
 %
 % 调用示例：
+%   % 加载配置文件
+%   cfg = config();
 %   % 加载地形数据
 %   load('terrain_data.mat');
 %   % 加载预处理的路径
 %   load('processed_path.mat');
 %   % 执行仿真
-%   recoder = simulateMultibeam(processed_path, terrain_data);
+%   recoder = simulateMultibeam(processed_path, terrain_data, cfg);
 %
 % 依赖函数：
 %   - multibeam.m
 %   - pcshow (MATLAB Point Cloud Toolbox)
 
-function recoder = simulateMultibeam(processedPath, terrainData)
+function recoder = simulateMultibeam(processedPath, terrainData, cfg)
     %% 多波束仿真采集函数
     % 输入:
     %   processedPath - 预处理后的AUV路径
     %   terrainData - 地形数据结构体，包含 X, Y, Z
+    %   cfg - 配置结构体（可选），包含声呐参数
     % 输出:
     %   recoder - 多波束采集记录数据
     
@@ -71,12 +80,29 @@ function recoder = simulateMultibeam(processedPath, terrainData)
     auv_y = processedPath(:, 2);
     auv_heading = processedPath(:, 3);
     
-    % 设置多波束参数
-    SONAR_DEPTH = 0;
-    SONAR_RANGE = 100;
-    SONAR_ANGLE = 60;
-    SONAR_BEAM_NUM = 256;
-    TERRAIN_OFFSET = -25;
+    % 从配置文件获取多波束参数（如果未提供cfg，使用默认值）
+    if nargin < 3 || isempty(cfg)
+        % 默认参数（向后兼容）
+        SONAR_DEPTH = 0;
+        SONAR_RANGE = 100;
+        SONAR_ANGLE = 60;
+        SONAR_BEAM_NUM = 256;
+        TERRAIN_OFFSET = -25;
+        fprintf('警告: 未提供配置文件，使用默认多波束声呐参数\n');
+    else
+        % 从配置文件读取参数
+        SONAR_DEPTH = cfg.sonar.depth;
+        SONAR_RANGE = cfg.sonar.range;
+        SONAR_ANGLE = cfg.sonar.angle;
+        SONAR_BEAM_NUM = cfg.sonar.beam_num;
+        TERRAIN_OFFSET = cfg.sonar.terrain_offset;
+        fprintf('从配置文件加载多波束声呐参数:\n');
+        fprintf('  - 声呐深度: %.1f m\n', SONAR_DEPTH);
+        fprintf('  - 探测距离: %.1f m\n', SONAR_RANGE);
+        fprintf('  - 扇面角度: %.1f°\n', SONAR_ANGLE);
+        fprintf('  - 波束数量: %d\n', SONAR_BEAM_NUM);
+        fprintf('  - 地形偏移: %.1f m\n', TERRAIN_OFFSET);
+    end 
     
     % 执行多波束测深仿真
     auv_poses = [auv_x, auv_y, auv_heading];

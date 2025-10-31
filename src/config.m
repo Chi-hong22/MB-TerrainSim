@@ -55,6 +55,7 @@ function cfg = config()
     cfg.sonar.range = 100;                             % 最大探测距离 (米)
     cfg.sonar.angle = 60;                              % 单侧扇面角度 (度)
     cfg.sonar.beam_num = 256;                          % 波束数量
+    cfg.sonar.terrain_offset = -25;                    % 地形偏移量 (米)，用于地形调整\可视化区分，预估条带宽30m左右   40
 
     %% ========== 子地图生成参数 ==========
     cfg.submap.heading_threshold = 0.9;                % 平均艏向角变化率阈值(度/采样点), 用于区分直线和转弯

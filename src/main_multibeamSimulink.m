@@ -59,7 +59,11 @@ clear variables;
 close all;
 clc;
 
-% 加载地形数据
+%% 配置文件加载
+cfg = config();
+fprintf('已加载配置文件 (版本: %s)\n', cfg.version);
+
+%% 加载地形数据
 % load XYZ.mat; % 牛师兄原始地形数据
 load Data/MapPoint_900_900.mat; % NESP地形数据
 % 对NESP地形数据进行放缩
@@ -80,15 +84,21 @@ auv_x = processed_path(:, 1);    % AUV x坐标
 auv_y = processed_path(:, 2);    % AUV y坐标
 auv_heading = processed_path(:, 3);   % AUV艏向角，角度制
 
-%% 可调节参数配置
-% 多波束声呐参数
-SONAR_DEPTH = 0;        % 声呐深度，单位：米
-SONAR_RANGE = 100;      % 声呐探测距离，单位：米
-SONAR_ANGLE = 60;       % 声呐扇面角度(单侧)，单位：度
-SONAR_BEAM_NUM = 256;   % 波束数量
+%% 多波束声呐参数配置（从配置文件读取）
+% 从配置文件获取多波束声呐参数
+SONAR_DEPTH = cfg.sonar.depth;              % 声呐深度，单位：米
+SONAR_RANGE = cfg.sonar.range;              % 声呐探测距离，单位：米
+SONAR_ANGLE = cfg.sonar.angle;              % 声呐扇面角度(单侧)，单位：度
+SONAR_BEAM_NUM = cfg.sonar.beam_num;        % 波束数量
+TERRAIN_OFFSET = cfg.sonar.terrain_offset;  % 地形偏移量，单位：米 地形下移偏移量，用于可视化区分，预估条带宽30m左右   40
 
-% 地形调整参数
-TERRAIN_OFFSET = -25;    % 地形下移偏移量，用于可视化区分，预估条带宽30m左右   40
+% 输出参数信息
+fprintf('\n多波束声呐参数配置:\n');
+fprintf('  - 声呐深度: %.1f m\n', SONAR_DEPTH);
+fprintf('  - 探测距离: %.1f m\n', SONAR_RANGE);
+fprintf('  - 扇面角度: %.1f°\n', SONAR_ANGLE);
+fprintf('  - 波束数量: %d\n', SONAR_BEAM_NUM);
+fprintf('  - 地形偏移: %.1f m\n\n', TERRAIN_OFFSET);
 
 
 %% 地形与轨迹可视化
