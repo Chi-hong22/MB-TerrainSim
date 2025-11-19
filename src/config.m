@@ -31,18 +31,18 @@ function cfg = config()
     cfg.path_file = 'NESP_PathFollowing.mat';         
     %% ========== 预处理参数 ==========
     cfg.preprocess.target_points = 70000;               % 降采样目标点数 (NESP: 70000, Comb(noNESP): 45000)
-    cfg.preprocess.scale_factor = 6;                    % 坐标系缩放系数
+    cfg.preprocess.scale_factor = 2;                    % 坐标系缩放系数  NESP_PathFollowing: 2, noNESP_PathFollowing: 6
 
     % 数据开头裁剪设置
     cfg.preprocess.trim_start_enabled = true;           % 是否启用数据头部裁剪
-    cfg.preprocess.trim_start_index = 701;              % 数据头部裁剪起始点 
+    cfg.preprocess.trim_start_index = 550;              % 数据头部裁剪起始点 NESP_PathFollowing: 550, noNESP_PathFollowing: 1101
 
     % 短时测试设置
-    cfg.preprocess.short_test_enabled = true;          % 是否启用短时测试模式
+    cfg.preprocess.short_test_enabled = false;          % 是否启用短时测试模式
     cfg.preprocess.short_test_range = [cfg.preprocess.trim_start_index, 5000];      % 短时测试的数据范围 [起始行, 结束行]
 
     %% ========== 惯导误差模拟参数 ==========
-    cfg.ins_error.enable = false;                       % INS误差模拟开关 (true: 启用误差, false: 理想路径)
+    cfg.ins_error.enable = false;                      % INS误差模拟开关 (true: 启用误差, false: 理想路径)
     cfg.ins_error.line_std = [0.03, 0.05];             % 直线段随机误差标准差 [x方向, y方向]
     cfg.ins_error.turn_std = [0.0005, 0.02];           % 转弯段随机误差标准差 [x方向, y方向]
     cfg.ins_error.cumulative = [0.019, 0.0025];        % 累积误差系数 [x方向, y方向]
