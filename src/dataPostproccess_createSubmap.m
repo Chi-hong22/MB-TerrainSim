@@ -81,7 +81,7 @@ end
 addpath(genpath(fileparts(current_script_path)));
 
 % 载入数据
-recoder_file = '250826_recoder.mat';
+recoder_file = '260324_recoder.mat';
 load(fullfile(data_path, recoder_file));
 
 ins_file = fullfile(data_path, '250826_Ins_path_simulated_data.mat');
@@ -109,6 +109,7 @@ visualizeRecoderPointCloud(recoder_with_ins_error, 'cloud');
 submap_params.heading_threshold = cfg.submap.heading_threshold;
 submap_params.frames_per_submap = cfg.submap.frames_per_submap;
 submap_params.window_size = cfg.submap.window_size;
+submap_params.min_straight_frames = cfg.submap.min_straight_frames;
 
 [~,submap_data,~] = createSubmap(recoder,recoder_with_ins_error, submap_params);
 

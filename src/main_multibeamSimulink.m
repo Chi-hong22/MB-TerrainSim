@@ -55,10 +55,25 @@
 %   multibeam, surf, pcshow
 
 %% 数据加载
-clear variables;
-close all;
-clc;
+% 清理工作环境
+clc; close all;
 
+% 获取当前工作目录
+currentPath = pwd;
+addpath(genpath(currentPath));
+
+% 获取当前脚本所在路径
+current_script_path = fileparts(mfilename('fullpath'));
+% 设置数据路径为当前脚本路径的上一级文件夹下的Data文件夹
+data_path = fullfile(current_script_path, '..', 'Data');
+
+% 如果目录不存在，则创建它
+if ~exist(data_path, 'dir')
+    mkdir(data_path);
+end
+
+% 添加当前目录及子目录到搜索路径 
+addpath(genpath(fileparts(current_script_path)));
 %% 配置文件加载
 cfg = config();
 fprintf('已加载配置文件 (版本: %s)\n', cfg.version);
@@ -78,8 +93,8 @@ Y = 10 * Y ;
 % auv_y = trajectory_data.path(:, 2);    % AUV y坐标
 % auv_heading = trajectory_data.path(:, 3);   % AUV艏向角
 
-% NESP中沙礁数据路径
-load Data/250826_Processed_path_data.mat;
+% 加载数据路径
+load Data/260323_Ling_Processed_path_data.mat;
 auv_x = processed_path(:, 1);    % AUV x坐标
 auv_y = processed_path(:, 2);    % AUV y坐标
 auv_heading = processed_path(:, 3);   % AUV艏向角，角度制

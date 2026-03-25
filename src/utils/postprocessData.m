@@ -88,6 +88,7 @@ function postprocessData(recoder, insPath, insError, submap_root_dir, cfg)
     submap_params.heading_threshold = cfg.submap.heading_threshold;
     submap_params.frames_per_submap = cfg.submap.frames_per_submap;
     submap_params.window_size = cfg.submap.window_size;
+    submap_params.min_straight_frames = cfg.submap.min_straight_frames;
 
     % 生成子地图（使用原始与处理后组合逻辑）
     [~,submap_data,~] = createSubmap(recoder, recoder_with_ins_error, submap_params);

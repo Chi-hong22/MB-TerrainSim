@@ -101,7 +101,7 @@ run('dataPostproccess_createSubmap.m')
 
 ## 输入数据要求
 
-### 地形数据：`MapPoint_900_900.mat`
+### 地形数据：`MapPoint.mat`
 
 包含三个 double 矩阵变量：X、Y、Z
 - 实际尺寸：900×900
@@ -125,7 +125,7 @@ run('dataPostproccess_createSubmap.m')
 ### 数据格式要求
 
 1. 所有数据必须采用MATLAB .mat格式保存
-2. 变量名必须与上述说明保持一致
+2. 变量名必须与上述说明保持一致(同时可以在config.m中修改)
 3. 坐标系统应统一为右手系
 4. 角度使用角度制（0-360度）
 

@@ -61,9 +61,26 @@
 %% 对通过动力学模型跑出来的AUV路径进行前处理
 
 % 之后采用多波束模拟算法采集点云数据，牛师兄多波束模拟脚本 `main_multibeamSimulink.m`
-clc;
-clear;
-close all;
+
+% 清理工作环境
+clc; close all;
+
+% 获取当前工作目录
+currentPath = pwd;
+addpath(genpath(currentPath));
+
+% 获取当前脚本所在路径
+current_script_path = fileparts(mfilename('fullpath'));
+% 设置数据路径为当前脚本路径的上一级文件夹下的Data文件夹
+data_path = fullfile(current_script_path, '..', 'Data');
+
+% 如果目录不存在，则创建它
+if ~exist(data_path, 'dir')
+    mkdir(data_path);
+end
+
+% 添加当前目录及子目录到搜索路径 
+addpath(genpath(fileparts(current_script_path)));
 
 %% 加载配置文件
 cfg = config();

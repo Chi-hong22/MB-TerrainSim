@@ -18,7 +18,9 @@
 %   params - 参数结构体
 %       .window_size - 居中滑动窗口大小(默认:40帧)
 %       .heading_threshold - 平均艏向角变化率阈值(默认:0.9度/采样点)
-%       .frames_per_submap - 每个子地图的帧数(默认:100帧)
+%       .frames_per_submap - 每个子地图的目标帧数(函数默认:100帧)
+%       .min_straight_frames - 可独立生成子地图的最小直线段帧数(函数默认:75帧)
+%       注：项目实际运行值通常由 config.m 传入
 %
 % 输出参数:
 %   sub_maps - 包含所有子地图数据的cell数组
@@ -28,12 +30,12 @@
 %       .end_idx - 结束索引
 %
 % 分割逻辑：
-%   1. 长直线段处理 (>=100帧):
-%       - 按100帧划分为完整子地图
+%   1. 长直线段处理 (长度 >= frames_per_submap):
+%       - 按 frames_per_submap 划分为完整子地图
 %       - 最后剩余部分保留为一个独立子地图
-%   2. 短直线段处理 (<100帧):
-%       - 当两侧为转弯段且直线段长度≥75帧时:
-%           * 从相邻转弯段补充数据至100帧
+%   2. 短直线段处理 (长度 < frames_per_submap):
+%       - 当两侧为转弯段且直线段长度 >= min_straight_frames 时:
+%           * 从相邻转弯段补充数据至 frames_per_submap
 %           * 优先从上一转弯段补充，避免与已有子地图重叠
 %           * 剩余帧数从下一转弯段起始处补充
 %       - 当上一段为直线段时:
@@ -61,12 +63,15 @@ function [sub_maps, sub_maps_with_error, segment_info] = createSubmap(recoder, r
     if ~isfield(params, 'frames_per_submap')
         params.frames_per_submap = 100;
     end
-    
+    if ~isfield(params, 'min_straight_frames')
+        params.min_straight_frames = 75;
+    end
+
     % 2. 使用滑动窗口检测直线段和转弯段（使用无误差数据进行检测）
     segment_info = detectSegments(recoder(:,4), params.window_size, params.heading_threshold);
-    
+
     % 3. 创建两组子地图
-    [sub_maps, sub_maps_with_error] = createSubmapsFromSegments(recoder, recoder_with_ins_error, segment_info, params.frames_per_submap, 75);
+    [sub_maps, sub_maps_with_error] = createSubmapsFromSegments(recoder, recoder_with_ins_error, segment_info, params.frames_per_submap, params.min_straight_frames);
     
     % 4. 可视化结果
     visualizeSubmapSeg(recoder, recoder_with_ins_error, segment_info, sub_maps, sub_maps_with_error);
