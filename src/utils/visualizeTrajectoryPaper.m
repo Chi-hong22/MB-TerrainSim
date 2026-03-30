@@ -4,6 +4,7 @@
 %   读取既有AUV轨迹数据（n×3，[x,y,theta]），按论文级规范绘制路径，
 %   并以统一放大倍数导出PNG与EPS文件，确保插入文档后等比缩放即可达到
 %   基准物理尺寸（8.8 cm）与字号（9 pt）。
+%   路径与预处理参数均从 config.m 读取，保持与主流程完全一致。
 %
 % 作者信息：
 %   作者：Chihong（游子昂）
@@ -11,20 +12,25 @@
 %   单位：哈尔滨工程大学
 %
 % 版本信息：
-%   当前版本：v1.0
+%   当前版本：v1.1
 %   创建日期：251119
-%   最后修改：251119
+%   最后修改：260330
 %
 % 版本历史：
 %   v1.0 (251119) - 首次发布
 %       + 实现AUV路径数据加载与绘制
 %       + 落地论文级等比放大规范（尺寸/字体/导出）
 %       + 支持PNG(600 dpi)与EPS双格式导出
+%   v1.1 (260330) - 接入 config.m 统一配置
+%       + 输入路径默认值改为读取 cfg.data_path + cfg.path_file
+%       + 输出目录默认值改为读取 cfg.data_path + 'trajectory_fig'
+%       + 补全预处理参数：trim_start_enabled/index、short_test_enabled/range
 %
 % 输入参数：
 %   input_mat_path - [string] 轨迹数据mat文件路径，可包含任意名称的n×3矩阵
-%                     默认Data/NESP_PathFollowing.mat
-%   output_dir     - [string] 导出图片目录，默认Data/trajectory_fig（自动创建）
+%                     默认读取 config.m 中 cfg.data_path + cfg.path_file
+%   output_dir     - [string] 导出图片目录（自动创建）
+%                     默认读取 config.m 中 cfg.data_path + 'trajectory_fig'
 %
 % 输出参数：
 %   无直接返回值，绘制效果显示在图窗中，并在output_dir生成PNG与EPS文件
@@ -34,20 +40,24 @@
 %   2. 均使用Arial字体，刻度朝外且无标题，仅显示X/Y坐标标签
 %   3. 图窗与Paper尺寸完全一致，确保导出与显示同尺寸
 %   4. PNG导出使用600 dpi，EPS采用向量绘制（-painters）
+%   5. 预处理逻辑（降采样、头部裁剪、短时测试）与 main.m 主流程保持一致
 %
 % 调用示例：
-%   visualizeTrajectoryPaper('Data/NESP_PathFollowing.mat', 'Outputs/path_fig');
+%   visualizeTrajectoryPaper();                          % 完全使用 config.m 默认
+%   visualizeTrajectoryPaper('Data/my_path.mat');        % 指定输入，输出用 config 默认
+%   visualizeTrajectoryPaper('Data/my_path.mat', 'Outputs/path_fig');
 %
 % 依赖工具箱：
 %   - 无特殊依赖（使用MATLAB基础绘图能力）
 %
 % 参见脚本：
-%   README.md中的轨迹数据说明
+%   src/config.m - 统一配置文件
+%   src/main.m   - 主流程入口
 function visualizeTrajectoryPaper(input_mat_path, output_dir)
 
     arguments
-        input_mat_path (1, :) char = fullfile('Data', 'NESP_PathFollowing.mat')
-        output_dir (1, :) char = fullfile('Data', 'trajectory_fig')
+        input_mat_path (1, :) char = ''
+        output_dir (1, :) char = ''
     end
 
     %% 基准参数
@@ -81,8 +91,21 @@ function visualizeTrajectoryPaper(input_mat_path, output_dir)
         warning('未在%s找到config.m，请确认项目结构。', src_dir);
     end
     cfg = config();
+
+    % 通用设置：用 config 填充未指定的路径参数
+    if isempty(input_mat_path)
+        input_mat_path = fullfile(cfg.data_path, cfg.path_file);
+    end
+    if isempty(output_dir)
+        output_dir = fullfile(cfg.data_path, 'trajectory_fig');
+    end
+
     params.target_points = cfg.preprocess.target_points;
     params.scale_factor = cfg.preprocess.scale_factor;
+    params.trim_start_enabled = cfg.preprocess.trim_start_enabled;
+    params.trim_start_index = cfg.preprocess.trim_start_index;
+    params.short_test_enabled = cfg.preprocess.short_test_enabled;
+    params.short_test_range = cfg.preprocess.short_test_range;
     params.enable_ins_error = cfg.ins_error.enable;
     params.error.line_std = cfg.ins_error.line_std;
     params.error.turn_std = cfg.ins_error.turn_std;

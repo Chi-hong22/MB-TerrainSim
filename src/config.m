@@ -27,14 +27,14 @@ function cfg = config()
     %% ========== 通用设置 ==========
     cfg.data_path = 'Data';                              % 数据文件路径
     cfg.terrain_file = 'MapPoint.mat';          % 地形数据文件名
-    cfg.path_file = '260323_Ling_PathFollowing.mat';         % 路径数据文件名
+    cfg.path_file = '260326_Ling_PathFollowing.mat';         % 路径数据文件名
     %% ========== 预处理参数 ==========
-    cfg.preprocess.target_points = 50000;               % 降采样目标点数 (NESP: 70000, Comb(noNESP): 45000, Ling:50000)
+    cfg.preprocess.target_points = 70000;               % 降采样目标点数 (NESP: 70000, Comb(noNESP): 45000, Ling:70000)
     cfg.preprocess.scale_factor = 1;                    % 坐标系缩放系数，目标是900*900范畴  NESP_PathFollowing: 2, noNESP_PathFollowing: 6, Ling: 1
 
     % 数据开头裁剪设置
     cfg.preprocess.trim_start_enabled = true;           % 是否启用数据头部裁剪
-    cfg.preprocess.trim_start_index = 350;             % 数据头部裁剪起始点 NESP_PathFollowing: 550, noNESP_PathFollowing: 1101, Ling:450
+    cfg.preprocess.trim_start_index = 400;             % 数据头部裁剪起始点 NESP_PathFollowing: 550, noNESP_PathFollowing: 1101, Ling:400
 
     % 短时测试设置
     cfg.preprocess.short_test_enabled = false;          % 是否启用短时测试模式
@@ -57,9 +57,10 @@ function cfg = config()
     cfg.sonar.terrain_offset = -25;                    % 地形偏移量 (米)，用于地形调整\可视化区分，预估条带宽30m左右   40
 
     %% ========== 子地图生成参数 ==========
-    cfg.submap.heading_threshold = 2.3;                % 平均艏向角变化率阈值(度/采样点), 用于区分直线和转弯  原始:0.9
-    cfg.submap.frames_per_submap = 50;                % 每个子地图的目标帧数   原始:100
-    cfg.submap.min_straight_frames = 40;               % 可独立生成子地图的最小直线段帧数 原始:75
+    % 注意:该部分子地图划分逻辑之后会修改为定帧子地图,带有转弯部分的子地图直接去除
+    cfg.submap.heading_threshold = 1.5;                % 平均艏向角变化率阈值(度/采样点), 用于区分直线和转弯  原始:0.9
+    cfg.submap.frames_per_submap = 100;                % 每个子地图的目标帧数   原始:100
+    cfg.submap.min_straight_frames = 50;               % 可独立生成子地图的最小直线段帧数 原始:75
     cfg.submap.window_size = 40;                       % 居中滑动窗口大小(帧), 用于检测转弯 
 
 

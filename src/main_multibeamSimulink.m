@@ -94,7 +94,7 @@ Y = 10 * Y ;
 % auv_heading = trajectory_data.path(:, 3);   % AUV艏向角
 
 % 加载数据路径
-load Data/260323_Ling_Processed_path_data.mat;
+load Data/260326_Ling_Processed_path_data.mat;
 auv_x = processed_path(:, 1);    % AUV x坐标
 auv_y = processed_path(:, 2);    % AUV y坐标
 auv_heading = processed_path(:, 3);   % AUV艏向角，角度制

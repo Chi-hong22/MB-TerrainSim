@@ -81,7 +81,7 @@ end
 addpath(genpath(fileparts(current_script_path)));
 
 % 载入数据
-recoder_file = '260324_recoder.mat';
+recoder_file = '260326_recoder.mat';
 load(fullfile(data_path, recoder_file));
 
 ins_file = fullfile(data_path, '250826_Ins_path_simulated_data.mat');
